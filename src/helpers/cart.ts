@@ -8,6 +8,7 @@ import {
 } from "@/helpers/variants";
 
 const CART_KEY = "shopy_cart";
+const EMPTY_CART: CartLine[] = [];
 
 export type CartLine = {
   productId: number;
@@ -21,6 +22,9 @@ export type CartLine = {
   qty: number;
 };
 
+let cachedRaw: string | null = null;
+let cachedLines: CartLine[] = EMPTY_CART;
+
 function canUseStorage() {
   return typeof window !== "undefined";
 }
@@ -29,36 +33,58 @@ function lineKey(productId: number, variantId?: number) {
   return `${productId}:${variantId ?? "base"}`;
 }
 
-export function readCart(): CartLine[] {
-  if (!canUseStorage()) return [];
+function parseCart(raw: string | null): CartLine[] {
+  if (!raw) return EMPTY_CART;
+  if (raw === cachedRaw) return cachedLines;
   try {
-    const raw = localStorage.getItem(CART_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as CartLine[];
+    const parsed = JSON.parse(raw) as CartLine[];
+    cachedRaw = raw;
+    cachedLines = Array.isArray(parsed) ? parsed : EMPTY_CART;
+    return cachedLines;
   } catch {
-    return [];
+    cachedRaw = raw;
+    cachedLines = EMPTY_CART;
+    return EMPTY_CART;
   }
+}
+
+export function readCart(): CartLine[] {
+  if (!canUseStorage()) return EMPTY_CART;
+  return parseCart(localStorage.getItem(CART_KEY));
+}
+
+/** Stable server/SSR snapshot for useSyncExternalStore */
+export function getCartServerSnapshot(): CartLine[] {
+  return EMPTY_CART;
 }
 
 export function writeCart(lines: CartLine[]) {
   if (!canUseStorage()) return;
-  localStorage.setItem(CART_KEY, JSON.stringify(lines));
+  const raw = JSON.stringify(lines);
+  localStorage.setItem(CART_KEY, raw);
+  cachedRaw = raw;
+  cachedLines = lines.length === 0 ? EMPTY_CART : lines;
   window.dispatchEvent(new Event("shopy-cart"));
 }
 
 export function clearCart() {
   if (!canUseStorage()) return;
   localStorage.removeItem(CART_KEY);
+  cachedRaw = null;
+  cachedLines = EMPTY_CART;
   window.dispatchEvent(new Event("shopy-cart"));
 }
 
 export function subscribeCart(onStoreChange: () => void) {
   if (!canUseStorage()) return () => undefined;
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === CART_KEY || event.key === null) onStoreChange();
+  };
   window.addEventListener("shopy-cart", onStoreChange);
-  window.addEventListener("storage", onStoreChange);
+  window.addEventListener("storage", onStorage);
   return () => {
     window.removeEventListener("shopy-cart", onStoreChange);
-    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener("storage", onStorage);
   };
 }
 

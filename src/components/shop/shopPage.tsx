@@ -27,11 +27,13 @@ import {
   cartCount,
   cartTotal,
   clearCart,
+  getCartServerSnapshot,
   readCart,
   setCartQty,
   subscribeCart,
 } from "@/helpers/cart";
 import {
+  getWishlistServerSnapshot,
   isInWishlist,
   readWishlist,
   subscribeWishlist,
@@ -71,8 +73,16 @@ export default function ShopPage() {
     customer ? "shop/account/addresses" : null,
     GetMyAddresses,
   );
-  const lines = useSyncExternalStore(subscribeCart, readCart, () => []);
-  const wish = useSyncExternalStore(subscribeWishlist, readWishlist, () => []);
+  const lines = useSyncExternalStore(
+    subscribeCart,
+    readCart,
+    getCartServerSnapshot,
+  );
+  const wish = useSyncExternalStore(
+    subscribeWishlist,
+    readWishlist,
+    getWishlistServerSnapshot,
+  );
   const locale = useSyncExternalStore(subscribeLocale, readLocale, () => "fa" as const);
   const [category, setCategory] = useState("");
   const [query, setQuery] = useState("");

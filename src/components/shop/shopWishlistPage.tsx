@@ -9,13 +9,20 @@ import ProductThumb from "@/components/shared/productThumb";
 import EmptyList from "@/components/shared/emptyList";
 import LoadingBox from "@/components/shared/loadingBox";
 import { GetShopProducts } from "@/services/shop";
-import { addToCart, cartCount, readCart, subscribeCart } from "@/helpers/cart";
+import {
+  addToCart,
+  cartCount,
+  getCartServerSnapshot,
+  readCart,
+  subscribeCart,
+} from "@/helpers/cart";
 import ProductPrice from "@/components/shared/productPrice";
 import {
   hasVariants,
   productStock,
 } from "@/helpers/variants";
 import {
+  getWishlistServerSnapshot,
   readWishlist,
   removeFromWishlist,
   subscribeWishlist,
@@ -23,8 +30,16 @@ import {
 } from "@/helpers/wishlist";
 
 export default function ShopWishlistPage() {
-  const wish = useSyncExternalStore(subscribeWishlist, readWishlist, () => []);
-  const lines = useSyncExternalStore(subscribeCart, readCart, () => []);
+  const wish = useSyncExternalStore(
+    subscribeWishlist,
+    readWishlist,
+    getWishlistServerSnapshot,
+  );
+  const lines = useSyncExternalStore(
+    subscribeCart,
+    readCart,
+    getCartServerSnapshot,
+  );
   const { data, error } = useSWR("shop/products", GetShopProducts);
   const loading = !data && !error;
 

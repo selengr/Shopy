@@ -14,8 +14,15 @@ import {
   GetShopProduct,
 } from "@/services/review";
 import { GetShopProducts } from "@/services/shop";
-import { addToCart, cartCount, readCart, subscribeCart } from "@/helpers/cart";
 import {
+  addToCart,
+  cartCount,
+  getCartServerSnapshot,
+  readCart,
+  subscribeCart,
+} from "@/helpers/cart";
+import {
+  getWishlistServerSnapshot,
   isInWishlist,
   readWishlist,
   subscribeWishlist,
@@ -52,8 +59,16 @@ export default function ShopProductPage({
   const { productId } = use(params);
   const id = Number(productId);
   const router = useRouter();
-  const lines = useSyncExternalStore(subscribeCart, readCart, () => []);
-  const wish = useSyncExternalStore(subscribeWishlist, readWishlist, () => []);
+  const lines = useSyncExternalStore(
+    subscribeCart,
+    readCart,
+    getCartServerSnapshot,
+  );
+  const wish = useSyncExternalStore(
+    subscribeWishlist,
+    readWishlist,
+    getWishlistServerSnapshot,
+  );
   const locale = useSyncExternalStore(subscribeLocale, readLocale, () => "fa" as const);
   const { data: productData, error, isLoading } = useSWR(
     { url: `/shop/products/${id}`, id },
