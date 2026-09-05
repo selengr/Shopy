@@ -46,6 +46,6 @@ export const PUBLIC_PRODUCT_META: Record<
   9: {
     title: "شال پاییزه",
     description: "شال نخی سبک",
-    image: "/products/tshirt.jpg",
+    image: "/products/scarf.svg",
   },
 };

@@ -6,7 +6,14 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: ["/", "/shop", "/shop/about", "/shop/contact", "/shop/track"],
+      allow: [
+        "/",
+        "/shop",
+        "/shop/about",
+        "/shop/contact",
+        "/shop/track",
+        "/shop/wishlist",
+      ],
       disallow: [
         "/admin",
         "/panel",

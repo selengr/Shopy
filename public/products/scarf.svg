@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-label="autumn scarf">
+  <rect width="800" height="800" fill="#ebe4d8"/>
+  <ellipse cx="400" cy="620" rx="200" ry="40" fill="#1f4a45" opacity="0.1"/>
+  <path d="M180 260c40-80 120-120 220-110 90 8 160 50 210 120 30 42 20 90-18 110-70 36-150 20-210-10-55-28-110-40-170-28-55 10-70-20-32-82z" fill="#1f4a45"/>
+  <path d="M250 300c70-10 150 8 220 45" fill="none" stroke="#c9a27a" stroke-width="18" stroke-linecap="round"/>
+  <path d="M300 360c55 25 120 40 180 35" fill="none" stroke="#f4efe6" stroke-width="12" stroke-linecap="round" opacity="0.7"/>
+  <path d="M420 430c30 70 20 140-10 200" fill="none" stroke="#1f4a45" stroke-width="46" stroke-linecap="round"/>
+  <path d="M470 450c20 65 8 130-25 185" fill="none" stroke="#c9a27a" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="560" cy="240" r="16" fill="#c45c3e"/>
+</svg>

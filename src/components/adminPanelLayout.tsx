@@ -67,7 +67,9 @@ export default function AdminPanelLayout({ children, permissions }: Props) {
     return <div className="p-8 text-sm text-[#6b6459]">در حال انتقال...</div>;
   }
   if (permissions && !user.canAccess(permissions)) {
-    return <span className="p-8 text-sm">loading ...</span>;
+    return (
+      <div className="p-8 text-sm text-[#6b6459]">در حال بررسی دسترسی...</div>
+    );
   }
 
   return (

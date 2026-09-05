@@ -17,7 +17,7 @@ import { STOCK_ALERT_THRESHOLD } from "@/helpers/stockAlerts";
 import type { OrderNotification } from "@/helpers/notifications";
 
 const DATA_VERSION_KEY = "shopy_data_v";
-const DATA_VERSION = "23";
+const DATA_VERSION = "24";
 const USERS_KEY = "shopy_users";
 const PRODUCTS_KEY = "shopy_products";
 const ORDERS_KEY = "shopy_orders";
@@ -270,7 +270,7 @@ function seedProducts(): Product[] {
       created_at: new Date().toISOString(),
       stock: 0,
       emoji: "🧣",
-      image: "/products/tshirt.jpg",
+      image: "/products/scarf.svg",
     },
   ];
 }

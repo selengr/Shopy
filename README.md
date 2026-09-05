@@ -93,6 +93,13 @@ Set `NEXT_PUBLIC_APP_URL` to your real public URL (no trailing slash). Sitemap, 
 
 Also keep `NEXT_PUBLIC_LOCAL_AUTH=true` for the browser mock API demo. For a real backend, flip it off and point `NEXT_PUBLIC_API_URL` at your API.
 
+Checklist before you go live:
+
+1. Copy `.env.example` → host env; set `NEXT_PUBLIC_APP_URL`
+2. Hard-refresh once after deploy if you already tried an older demo (mock data version is **24**)
+3. Smoke the walk below on phone width — panel menu is a hamburger under `xl`
+4. Optional: turn on Kavenegar / Zarinpal only if you have keys
+
 ```bash
 npm run build
 npm start

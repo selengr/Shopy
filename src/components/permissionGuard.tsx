@@ -23,7 +23,9 @@ export default function PermissionGuard({
   }, [allowed, loading, router, user]);
 
   if (loading || !allowed) {
-    return <span className="p-8 text-sm">loading ...</span>;
+    return (
+      <div className="p-8 text-sm text-[#6b6459]">در حال بررسی دسترسی...</div>
+    );
   }
 
   return children;
