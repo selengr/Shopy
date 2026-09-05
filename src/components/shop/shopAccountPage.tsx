@@ -400,6 +400,13 @@ export default function ShopAccountPage() {
                               : ""}
                             {order.couponCode ? ` · ${order.couponCode}` : ""}
                           </p>
+                          {(order.carrier || order.trackingCode) && (
+                            <p className="mt-1 text-xs text-emerald-800" dir="ltr">
+                              {[order.carrier, order.trackingCode]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          )}
                         </div>
                         <OrderStatusBadge status={order.status} />
                       </div>

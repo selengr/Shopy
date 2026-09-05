@@ -9,6 +9,7 @@ import ProductThumb from "@/components/shared/productThumb";
 import { TrackShopOrder } from "@/services/tracking";
 import { formatToman } from "@/helpers/catalog";
 import { formatDay, statusLabel } from "@/helpers/orders";
+import { formatShipmentTracking } from "@/helpers/tracking";
 import { normalizeIranianPhone } from "@/helpers/auth";
 import type Order from "@/models/order";
 
@@ -97,6 +98,11 @@ export default function ShopOrderConfirmPage({
                 {order.shippingFee
                   ? ` · ${formatToman(order.shippingFee)}`
                   : " · رایگان"}
+              </p>
+            )}
+            {formatShipmentTracking(order) && (
+              <p className="mt-2 rounded-2xl bg-emerald-50 px-3 py-2 text-xs text-emerald-900" dir="ltr">
+                {formatShipmentTracking(order)}
               </p>
             )}
 

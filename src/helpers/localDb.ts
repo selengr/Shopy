@@ -16,7 +16,7 @@ import { STOCK_ALERT_THRESHOLD } from "@/helpers/stockAlerts";
 import type { OrderNotification } from "@/helpers/notifications";
 
 const DATA_VERSION_KEY = "shopy_data_v";
-const DATA_VERSION = "17";
+const DATA_VERSION = "18";
 const USERS_KEY = "shopy_users";
 const PRODUCTS_KEY = "shopy_products";
 const ORDERS_KEY = "shopy_orders";
@@ -421,6 +421,9 @@ function seedOrders(): Order[] {
       total: 2515000,
       status: "shipped",
       paymentMethod: "cod",
+      carrier: "تیپاکس",
+      trackingCode: "TIPAX-1045-8821",
+      shipped_at: daysAgo(1, 18),
       address: {
         recipientName: "رضا کاظمی",
         phone: "09120001111",
@@ -482,6 +485,9 @@ function seedOrders(): Order[] {
       total: 1460000,
       status: "delivered",
       paymentMethod: "cod",
+      carrier: "پیک شهری",
+      trackingCode: "COURIER-1043",
+      shipped_at: daysAgo(3, 15),
       address: {
         label: "خانه",
         recipientName: "امیر حسینی",

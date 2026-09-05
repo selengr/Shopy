@@ -43,6 +43,11 @@ export default interface Order {
   shippingMethodId?: number;
   shippingTitle?: string;
   shippingFee?: number;
+  /** Parcel tracking number (set when shipping) */
+  trackingCode?: string;
+  /** Carrier / courier name */
+  carrier?: string;
+  shipped_at?: string;
   address?: {
     label?: string;
     recipientName: string;

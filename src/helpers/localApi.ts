@@ -1045,6 +1045,25 @@ export async function handleLocalRequest(
       saveProducts(products);
     }
 
+    const trackingCode =
+      body.trackingCode !== undefined
+        ? String(body.trackingCode).trim() || undefined
+        : current.trackingCode;
+    const carrier =
+      body.carrier !== undefined
+        ? String(body.carrier).trim() || undefined
+        : current.carrier;
+    if (trackingCode && trackingCode.length > 80) {
+      throw fail(config, 422, {
+        errors: { trackingCode: "کد رهگیری خیلی بلند است" },
+      });
+    }
+    if (carrier && carrier.length > 60) {
+      throw fail(config, 422, {
+        errors: { carrier: "نام شرکت پستی خیلی بلند است" },
+      });
+    }
+
     orders[index] = {
       ...current,
       status: next,
@@ -1054,6 +1073,55 @@ export async function handleLocalRequest(
             paymentMethod: current.paymentMethod ?? "cod",
           }
         : {}),
+      ...(next === "shipped"
+        ? {
+            trackingCode,
+            carrier,
+            shipped_at: current.shipped_at ?? new Date().toISOString(),
+          }
+        : {}),
+    };
+    saveOrders(orders);
+    return ok(config, { order: orders[index] });
+  }
+
+  const trackingMatch = path.match(/^\/orders\/(\d+)\/tracking$/);
+  if (method === "POST" && trackingMatch) {
+    const session = getSession();
+    if (!session) throw fail(config, 401, { message: "unauthenticated" });
+    const id = Number(trackingMatch[1]);
+    const orders = getOrders();
+    const index = orders.findIndex((item) => item.id === id);
+    if (index < 0) throw fail(config, 404, { message: "not found" });
+    const current = orders[index];
+    if (current.status !== "shipped" && current.status !== "delivered") {
+      throw fail(config, 422, {
+        errors: { status: "فقط برای سفارش ارسال‌شده یا تحویل‌شده" },
+      });
+    }
+    const trackingCode =
+      body.trackingCode !== undefined
+        ? String(body.trackingCode).trim() || undefined
+        : current.trackingCode;
+    const carrier =
+      body.carrier !== undefined
+        ? String(body.carrier).trim() || undefined
+        : current.carrier;
+    if (trackingCode && trackingCode.length > 80) {
+      throw fail(config, 422, {
+        errors: { trackingCode: "کد رهگیری خیلی بلند است" },
+      });
+    }
+    if (carrier && carrier.length > 60) {
+      throw fail(config, 422, {
+        errors: { carrier: "نام شرکت پستی خیلی بلند است" },
+      });
+    }
+    orders[index] = {
+      ...current,
+      trackingCode,
+      carrier,
+      shipped_at: current.shipped_at ?? new Date().toISOString(),
     };
     saveOrders(orders);
     return ok(config, { order: orders[index] });

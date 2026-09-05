@@ -9,7 +9,7 @@ import ShopShell from "@/components/shop/shopShell";
 import ProductThumb from "@/components/shared/productThumb";
 import LoadingBox from "@/components/shared/loadingBox";
 import { TrackShopOrder } from "@/services/tracking";
-import { TRACK_FLOW, isTrackStepDone } from "@/helpers/tracking";
+import { TRACK_FLOW, formatShipmentTracking, isTrackStepDone } from "@/helpers/tracking";
 import { formatToman } from "@/helpers/catalog";
 import { formatDay, statusLabel } from "@/helpers/orders";
 import { iranianPhoneRegExp, normalizeIranianPhone } from "@/helpers/auth";
@@ -174,6 +174,15 @@ function TrackBody() {
                 );
               })}
             </ol>
+          )}
+
+          {formatShipmentTracking(order) && (
+            <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+              <p className="font-medium">رهگیری مرسوله</p>
+              <p className="mt-1" dir="ltr">
+                {formatShipmentTracking(order)}
+              </p>
+            </div>
           )}
 
           <div className="rounded-3xl border border-[#14110e]/8 bg-white/85 p-5 shadow-sm">

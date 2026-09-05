@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import {
   GetSingleOrder,
   UpdateOrderStatus,
+  UpdateOrderTracking,
   UpdatePackingNote,
 } from "@/services/order";
 import LoadingBox from "@/components/shared/loadingBox";
@@ -17,6 +18,10 @@ import { formatDay, nextStatuses, statusLabel } from "@/helpers/orders";
 import { paymentLabel } from "@/helpers/payments";
 import { formatToman } from "@/helpers/catalog";
 import { formatAddressLine } from "@/helpers/shipping";
+import {
+  SHIPPING_CARRIERS,
+  formatShipmentTracking,
+} from "@/helpers/tracking";
 import type { OrderStatus } from "@/models/order";
 import ValidationError from "@/exceptions/validationError";
 
@@ -36,8 +41,22 @@ export default function OrderDetail({
   const order = data?.order;
   const [packingNote, setPackingNote] = useState<string | null>(null);
   const [savingNote, setSavingNote] = useState(false);
+  const [shipFormOpen, setShipFormOpen] = useState(false);
+  const [carrier, setCarrier] = useState("");
+  const [trackingCode, setTrackingCode] = useState("");
+  const [savingShip, setSavingShip] = useState(false);
+
+  const openShipForm = () => {
+    setCarrier(order?.carrier || order?.shippingTitle || SHIPPING_CARRIERS[0]);
+    setTrackingCode(order?.trackingCode ?? "");
+    setShipFormOpen(true);
+  };
 
   const changeStatus = async (status: OrderStatus) => {
+    if (status === "shipped") {
+      openShipForm();
+      return;
+    }
     try {
       await UpdateOrderStatus(Number(orderId), status);
       await mutate();
@@ -49,6 +68,38 @@ export default function OrderDetail({
         return;
       }
       toast.error("وضعیت عوض نشد");
+    }
+  };
+
+  const confirmShip = async () => {
+    setSavingShip(true);
+    try {
+      if (order?.status === "shipped" || order?.status === "delivered") {
+        await UpdateOrderTracking(Number(orderId), {
+          carrier: carrier.trim() || undefined,
+          trackingCode: trackingCode.trim() || undefined,
+        });
+        toast.success("کد رهگیری ذخیره شد");
+      } else {
+        await UpdateOrderStatus(Number(orderId), "shipped", {
+          carrier: carrier.trim() || undefined,
+          trackingCode: trackingCode.trim() || undefined,
+        });
+        toast.success(`وضعیت شد ${statusLabel("shipped")}`);
+      }
+      setShipFormOpen(false);
+      await mutate();
+      await globalMutate("orders");
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        const first = Object.values(err.messages)[0];
+        const message = Array.isArray(first) ? first[0] : first;
+        toast.error(String(message ?? "ذخیره نشد"));
+        return;
+      }
+      toast.error("ذخیره نشد");
+    } finally {
+      setSavingShip(false);
     }
   };
 
@@ -93,6 +144,7 @@ export default function OrderDetail({
   }
 
   const noteDraft = packingNote ?? order.packingNote ?? "";
+  const shipmentLabel = formatShipmentTracking(order);
 
   return (
     <div>
@@ -128,7 +180,10 @@ export default function OrderDetail({
           <h2 className="font-display text-lg font-semibold">اقلام</h2>
           <ul className="mt-3 divide-y divide-[#14110e]/8">
             {order.items.map((item) => (
-              <li key={`${item.productId}-${item.title}`} className="flex items-center justify-between gap-3 py-3">
+              <li
+                key={`${item.productId}-${item.title}`}
+                className="flex items-center justify-between gap-3 py-3"
+              >
                 <span className="flex items-center gap-3">
                   <span className="inline-block w-12 shrink-0">
                     <ProductThumb item={item} className="h-12" compact />
@@ -144,7 +199,9 @@ export default function OrderDetail({
               </li>
             ))}
           </ul>
-          {(order.subtotal != null || order.shippingFee != null || order.discount) && (
+          {(order.subtotal != null ||
+            order.shippingFee != null ||
+            order.discount) && (
             <div className="mt-4 space-y-1 border-t border-[#14110e]/8 pt-3 text-sm text-[#5c564d]">
               {order.subtotal != null && (
                 <p className="flex justify-between gap-3">
@@ -190,12 +247,22 @@ export default function OrderDetail({
             {order.couponCode && (
               <p className="mt-2 text-sm text-emerald-800">
                 تخفیف {order.couponCode}
-                {order.discount ? ` · −${order.discount.toLocaleString("fa-IR")} تومان` : ""}
+                {order.discount
+                  ? ` · −${order.discount.toLocaleString("fa-IR")} تومان`
+                  : ""}
               </p>
             )}
             {order.shippingTitle && (
               <p className="mt-2 text-sm text-[#5c564d]">
                 ارسال: {order.shippingTitle}
+              </p>
+            )}
+            {shipmentLabel && (
+              <p className="mt-2 rounded-2xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                رهگیری مرسوله:{" "}
+                <span dir="ltr" className="font-medium">
+                  {shipmentLabel}
+                </span>
               </p>
             )}
             {order.address && (
@@ -240,6 +307,83 @@ export default function OrderDetail({
               {savingNote ? "..." : "ذخیره یادداشت"}
             </button>
           </div>
+
+          {(order.status === "shipped" || order.status === "delivered") && (
+            <div className="rounded-3xl border border-[#14110e]/8 bg-white/85 p-5 shadow-sm">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-display text-lg font-semibold">رهگیری مرسوله</h2>
+                <button
+                  type="button"
+                  onClick={openShipForm}
+                  className="text-sm text-[#1f4a45] hover:underline"
+                >
+                  ویرایش
+                </button>
+              </div>
+              <p className="mt-2 text-sm text-[#5c564d]" dir="ltr">
+                {shipmentLabel || "هنوز کد رهگیری ثبت نشده"}
+              </p>
+            </div>
+          )}
+
+          {(shipFormOpen || nextStatuses(order.status).includes("shipped")) &&
+            shipFormOpen && (
+              <div className="rounded-3xl border border-[#1f4a45]/25 bg-[#1f4a45]/[0.04] p-5 shadow-sm">
+                <h2 className="font-display text-lg font-semibold">
+                  {order.status === "shipped" || order.status === "delivered"
+                    ? "ویرایش رهگیری"
+                    : "ارسال سفارش"}
+                </h2>
+                <p className="mt-1 text-xs text-[#6b6459]">
+                  کد رهگیری اختیاری است؛ مشتری در پیگیری می‌بیندش.
+                </p>
+                <label className="mt-3 block text-sm">
+                  شرکت / روش
+                  <select
+                    value={carrier}
+                    onChange={(event) => setCarrier(event.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-[#14110e]/10 bg-white px-3 py-2.5 text-sm"
+                  >
+                    {SHIPPING_CARRIERS.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="mt-3 block text-sm">
+                  کد رهگیری
+                  <input
+                    value={trackingCode}
+                    onChange={(event) => setTrackingCode(event.target.value)}
+                    dir="ltr"
+                    placeholder="مثلاً TIPAX-1045-8821"
+                    className="mt-1 w-full rounded-2xl border border-[#14110e]/10 bg-white px-3 py-2.5 text-sm"
+                  />
+                </label>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={savingShip}
+                    onClick={confirmShip}
+                    className="rounded-full bg-[#1f4a45] px-4 py-2 text-sm text-white disabled:opacity-50"
+                  >
+                    {savingShip
+                      ? "..."
+                      : order.status === "shipped" || order.status === "delivered"
+                        ? "ذخیره"
+                        : "تایید ارسال"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShipFormOpen(false)}
+                    className="rounded-full px-4 py-2 text-sm ring-1 ring-[#14110e]/15"
+                  >
+                    انصراف
+                  </button>
+                </div>
+              </div>
+            )}
 
           {nextStatuses(order.status).length > 0 && (
             <div className="rounded-3xl border border-[#14110e]/8 bg-white/85 p-5 shadow-sm">

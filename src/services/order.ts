@@ -21,8 +21,23 @@ export async function CreateOrder(values: {
   return await callApi().post("/orders", values);
 }
 
-export async function UpdateOrderStatus(orderId: number, status: OrderStatus) {
-  return await callApi().post(`/orders/${orderId}/status`, { status });
+export async function UpdateOrderStatus(
+  orderId: number,
+  status: OrderStatus,
+  extra?: { trackingCode?: string; carrier?: string },
+) {
+  return await callApi().post(`/orders/${orderId}/status`, {
+    status,
+    ...extra,
+  });
+}
+
+export async function UpdateOrderTracking(
+  orderId: number,
+  values: { trackingCode?: string; carrier?: string },
+) {
+  const res = await callApi().post(`/orders/${orderId}/tracking`, values);
+  return res.data?.order as Order;
 }
 
 export async function UpdatePackingNote(orderId: number, packingNote: string) {
