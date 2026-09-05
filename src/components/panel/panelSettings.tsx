@@ -34,6 +34,7 @@ export default function PanelSettings() {
       const saved = await UpdateShopSettings({
         name: settings.name.trim(),
         tagline: settings.tagline?.trim() || undefined,
+        about: settings.about?.trim() || undefined,
         phone: settings.phone?.trim() || undefined,
         instagram: settings.instagram?.trim() || undefined,
         address: settings.address?.trim() || undefined,
@@ -83,6 +84,15 @@ export default function PanelSettings() {
           <input
             value={settings.tagline ?? ""}
             onChange={(event) => patch({ tagline: event.target.value })}
+            className="w-full rounded-2xl border border-[#14110e]/10 px-3 py-2.5"
+          />
+        </label>
+        <label className="block text-sm">
+          <span className="mb-1 block text-[#5c564d]">متن صفحه درباره</span>
+          <textarea
+            value={settings.about ?? ""}
+            onChange={(event) => patch({ about: event.target.value })}
+            rows={4}
             className="w-full rounded-2xl border border-[#14110e]/10 px-3 py-2.5"
           />
         </label>

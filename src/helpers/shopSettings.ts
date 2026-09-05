@@ -4,6 +4,8 @@ export function defaultShopSettings(): ShopSettings {
   return {
     name: "Shopy",
     tagline: "فروشگاه کوچک، سفارش آنلاین",
+    about:
+      "ما یک فروشگاه جمع‌وجوریم؛ محصول‌ها را با حوصله انتخاب می‌کنیم، موجودی را واقعی نگه می‌داریم و سفارش را تا درِ خانه پیگیری می‌کنیم. از ویترین تا ارسال، همه‌چیز شفاف است.",
     phone: "02191000000",
     instagram: "shopy.shop",
     address: "تهران",

@@ -17,10 +17,13 @@ export default function ShopShell({
   children,
   cartCount = 0,
   wishCount = 0,
+  flush = false,
 }: {
   children: React.ReactNode;
   cartCount?: number;
   wishCount?: number;
+  /** Full-bleed pages (about / contact heroes) skip the content max-width wrapper */
+  flush?: boolean;
 }) {
   const locale = useSyncExternalStore(subscribeLocale, readLocale, () => "fa" as ShopLocale);
   const fa = locale === "fa";
@@ -148,7 +151,13 @@ export default function ShopShell({
           </nav>
         )}
       </header>
-      <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">{children}</div>
+      <div
+        className={
+          flush ? "" : "mx-auto max-w-6xl px-5 py-8 sm:px-8"
+        }
+      >
+        {children}
+      </div>
       <footer className="border-t border-[#14110e]/8 px-5 py-6 text-center text-xs text-[#6b6459] sm:px-8">
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link href="/shop/about" className="hover:text-[#1f4a45]">

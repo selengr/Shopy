@@ -180,6 +180,50 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section id="about" className="relative overflow-hidden border-y border-[#14110e]/8">
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 55% 50% at 90% 20%, rgba(31,74,69,0.14), transparent 55%), linear-gradient(180deg, #efe8dc 0%, #f4efe6 100%)",
+            }}
+          />
+          <div className="relative mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.35 }}
+              className="max-w-2xl"
+            >
+              <p className="font-display text-5xl font-bold tracking-tight text-[#1f4a45] sm:text-6xl">
+                Shopy
+              </p>
+              <h2 className="font-display mt-4 text-3xl font-semibold text-[#14110e]">
+                پنل فروشگاه کوچک برای کار هر روز
+              </h2>
+              <p className="mt-5 text-base leading-8 text-[#5c564d]">
+                از ورود با موبایل تا ویترین عمومی، سفارش، ارسال و آمار فروشنده —
+                یک اپ فارسی که لازم نباشد ده تا ابزار جدا باز کنی. این صفحه خود
+                محصول است؛ فروشگاه نمونه را از منوی بالا باز کن.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href="/auth/register"
+                  className="rounded-full bg-[#1f4a45] px-6 py-3 text-sm text-white transition hover:-translate-y-0.5 hover:bg-[#173833]"
+                >
+                  ساخت حساب
+                </Link>
+                <Link
+                  href="/shop"
+                  className="rounded-full border border-[#14110e]/12 bg-white/80 px-6 py-3 text-sm transition hover:bg-white"
+                >
+                  دیدن فروشگاه نمونه
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         <section id="how" className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
           <div className="overflow-hidden rounded-[2rem] bg-[#1f4a45] px-6 py-10 text-white sm:px-12 sm:py-14">
             <p className="text-sm text-white/60">سه قدم</p>
@@ -235,6 +279,9 @@ export default function LandingPage() {
           <Logo />
           <div className="flex items-center gap-4 text-sm text-[#6b6459]">
             <p>پنل ادمین فروشگاه · ۲۰۲۶</p>
+            <Link href="#about" className="text-[#1f4a45] hover:underline">
+              درباره
+            </Link>
             <Link href="/shop/contact" className="text-[#1f4a45] hover:underline">
               تماس
             </Link>

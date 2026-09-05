@@ -1972,6 +1972,7 @@ export async function handleLocalRequest(
     const settings = {
       name,
       tagline: String(body.tagline ?? "").trim() || undefined,
+      about: String(body.about ?? "").trim() || undefined,
       phone: String(body.phone ?? "").trim() || undefined,
       instagram: String(body.instagram ?? "").trim().replace(/^@/, "") || undefined,
       address: String(body.address ?? "").trim() || undefined,
