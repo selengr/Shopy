@@ -10,6 +10,7 @@ import {
   variantUnitPrice,
 } from "@/helpers/variants";
 import { normalizeImagesInput } from "@/helpers/productImages";
+import { isProductActive } from "@/helpers/catalog";
 import { nextStatuses, canCustomerCancel } from "@/helpers/orders";
 import { canRequestReturn } from "@/helpers/returns";
 import { makeAuthority, makeRefId } from "@/helpers/payments";
@@ -416,6 +417,7 @@ export async function handleLocalRequest(
       images: media.images,
       variants,
       featured: Boolean(body.featured),
+      active: body.active === undefined ? true : Boolean(body.active),
     };
     saveProducts([product, ...products]);
     return ok(config, { product }, 201);
@@ -479,6 +481,10 @@ export async function handleLocalRequest(
         body.featured !== undefined
           ? Boolean(body.featured)
           : products[index].featured,
+      active:
+        body.active !== undefined
+          ? Boolean(body.active)
+          : products[index].active,
     };
     saveProducts(products);
     recordLowStockAlerts([products[index]]);
@@ -501,6 +507,24 @@ export async function handleLocalRequest(
     return ok(config, { product: products[index] });
   }
 
+  const archiveMatch = path.match(/^\/products\/(\d+)\/archive$/);
+  if (method === "POST" && archiveMatch) {
+    const session = getSession();
+    if (!session) throw fail(config, 401, { message: "unauthenticated" });
+    const id = Number(archiveMatch[1]);
+    const products = getProducts();
+    const index = products.findIndex((item) => item.id === id);
+    if (index < 0) throw fail(config, 404, { message: "not found" });
+    const nextActive = !isProductActive(products[index]);
+    products[index] = {
+      ...products[index],
+      active: nextActive,
+      featured: nextActive ? products[index].featured : false,
+    };
+    saveProducts(products);
+    return ok(config, { product: products[index] });
+  }
+
   const deleteMatch = path.match(/^\/products\/(\d+)\/delete$/);
   if (method === "POST" && deleteMatch) {
     const session = getSession();
@@ -512,14 +536,16 @@ export async function handleLocalRequest(
 
   if (method === "GET" && path === "/shop/products") {
     const reviews = getReviews();
-    const products = getProducts().map((product) => {
-      const list = reviews.filter((item) => item.productId === product.id);
-      return {
-        ...product,
-        ratingAvg: averageRating(list),
-        reviewCount: list.length,
-      };
-    });
+    const products = getProducts()
+      .filter((product) => isProductActive(product))
+      .map((product) => {
+        const list = reviews.filter((item) => item.productId === product.id);
+        return {
+          ...product,
+          ratingAvg: averageRating(list),
+          reviewCount: list.length,
+        };
+      });
     return ok(config, { products });
   }
 
@@ -527,7 +553,9 @@ export async function handleLocalRequest(
   if (method === "GET" && shopProductMatch) {
     const id = Number(shopProductMatch[1]);
     const product = getProducts().find((item) => item.id === id);
-    if (!product) throw fail(config, 404, { message: "not found" });
+    if (!product || !isProductActive(product)) {
+      throw fail(config, 404, { message: "not found" });
+    }
     const list = getReviews().filter((item) => item.productId === id);
     return ok(config, {
       product: {
@@ -542,7 +570,9 @@ export async function handleLocalRequest(
   if (method === "GET" && shopReviewsMatch) {
     const id = Number(shopReviewsMatch[1]);
     const product = getProducts().find((item) => item.id === id);
-    if (!product) throw fail(config, 404, { message: "not found" });
+    if (!product || !isProductActive(product)) {
+      throw fail(config, 404, { message: "not found" });
+    }
     const reviews = getReviews()
       .filter((item) => item.productId === id)
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
@@ -635,6 +665,11 @@ export async function handleLocalRequest(
       const qty = Number(row.qty ?? 0);
       if (!product || qty < 1) {
         throw fail(config, 422, { errors: { items: "محصول یا تعداد درست نیست" } });
+      }
+      if (!isProductActive(product)) {
+        throw fail(config, 422, {
+          errors: { items: `«${product.title}» دیگر در فروشگاه نیست` },
+        });
       }
 
       if (hasVariants(product)) {

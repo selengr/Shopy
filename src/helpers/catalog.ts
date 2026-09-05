@@ -21,6 +21,11 @@ export function hasSale(product: {
   return compare > product.price && product.price >= 0;
 }
 
+/** Archived products are hidden from the public shop. */
+export function isProductActive(product: { active?: boolean }) {
+  return product.active !== false;
+}
+
 export function salePercent(product: {
   price: number;
   compareAtPrice?: number;

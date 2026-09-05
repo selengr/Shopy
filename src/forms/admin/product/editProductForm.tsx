@@ -43,6 +43,7 @@ const FormikEditProductForm = withFormik<ProductFormProps, CreateProductInterfac
             : [],
       variants: variantsFromProduct(product.variants),
       featured: Boolean(product.featured),
+      active: product.active !== false,
     }),
     validationSchema: yup.object({
       title: yup.string().required("عنوان الزامی است").min(4).max(255),

@@ -9,7 +9,12 @@ import ValidationError from "@/exceptions/validationError";
 import { categoryLabel, formatToman } from "@/helpers/catalog";
 import ProductThumb from "@/components/shared/productThumb";
 import Product from "@/models/product";
-import { DeleteProduct, ToggleProductFeatured } from "@/services/product";
+import {
+  DeleteProduct,
+  ToggleProductArchive,
+  ToggleProductFeatured,
+} from "@/services/product";
+import { isProductActive } from "@/helpers/catalog";
 
 interface Props {
   product: Product;
@@ -22,6 +27,8 @@ interface Props {
 export default function ProductListItem({ product, mutateProducts }: Props) {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [featuring, setFeaturing] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const active = isProductActive(product);
 
   const deleteHandler = async () => {
     try {
@@ -57,8 +64,21 @@ export default function ProductListItem({ product, mutateProducts }: Props) {
     }
   };
 
+  const toggleArchive = async () => {
+    setArchiving(true);
+    try {
+      await ToggleProductArchive(product.id);
+      await mutateProducts();
+      toast.success(active ? "آرشیو شد (از فروشگاه مخفی)" : "دوباره فعال شد");
+    } catch {
+      toast.error("تغییر وضعیت نشد");
+    } finally {
+      setArchiving(false);
+    }
+  };
+
   return (
-    <tr>
+    <tr className={active ? undefined : "bg-gray-50 text-gray-500"}>
       <td className="hidden">
         {showDeleteConfirmation && (
           <DeleteConfirmation
@@ -80,6 +100,11 @@ export default function ProductListItem({ product, mutateProducts }: Props) {
               ویژه
             </span>
           )}
+          {!active && (
+            <span className="rounded-full bg-gray-200 px-2 py-0.5 text-[10px] text-gray-700">
+              آرشیو
+            </span>
+          )}
         </span>
       </td>
       <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-900">
@@ -97,7 +122,15 @@ export default function ProductListItem({ product, mutateProducts }: Props) {
       <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6">
         <button
           type="button"
-          disabled={featuring}
+          disabled={archiving}
+          onClick={toggleArchive}
+          className="ml-4 text-[#5c564d] hover:underline disabled:opacity-50"
+        >
+          {active ? "آرشیو" : "فعال‌سازی"}
+        </button>
+        <button
+          type="button"
+          disabled={featuring || !active}
           onClick={toggleFeatured}
           className="ml-4 text-[#1f4a45] hover:underline disabled:opacity-50"
         >

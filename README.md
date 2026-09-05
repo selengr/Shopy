@@ -32,12 +32,13 @@ I started this around 2022 on Next.js 12, left it alone for a long time, then dr
 - product photo galleries (up to 6 images; first is the cover)
 - customers can cancel pending / paid orders from `/shop/account`
 - shop catalog sort (newest / price / rating) plus in-stock and on-sale filters
+- soft-archive products (hide from `/shop` without deleting)
 
 Default mode needs no backend: `NEXT_PUBLIC_LOCAL_AUTH=true`. Sign in as `09121111111`, grab the code from the toast / next screen (it stays up a bit longer so you can copy it), and you're in. Shop is `/shop`.
 
 ### Quick demo walk
 
-1. Open `/shop` — featured section, then browse. Open the white sneakers for a 3-photo gallery. تیشرت and کیف have sale prices. «شال پاییزه» is sold out on purpose.
+1. Open `/shop` — featured section, then browse. Open the white sneakers for a 3-photo gallery. تیشرت and کیف have sale prices. «شال پاییزه» is sold out; ساعت مچی is archived so it won’t appear in the shop.
 2. Add something to the cart (variant products open the product page). Try coupon `WELCOME10` or `SAVE50K`. Optional checkout note goes to the seller.
 3. Checkout COD → you land on an order receipt. Track with the same phone, or try sample **1048** / `09123334444`.
 4. Seller: `/auth/login` as `09121111111`, then `/panel` for orders / analytics / notifications. Move a packed order to shipped (add a tracking code) → delivered.

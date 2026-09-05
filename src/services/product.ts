@@ -52,3 +52,8 @@ export async function ToggleProductFeatured(productId: number) {
   const res = await callApi().post(`/products/${productId}/feature`, {});
   return res.data?.product;
 }
+
+export async function ToggleProductArchive(productId: number) {
+  const res = await callApi().post(`/products/${productId}/archive`, {});
+  return res.data?.product;
+}

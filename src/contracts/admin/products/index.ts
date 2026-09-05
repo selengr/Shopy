@@ -22,6 +22,7 @@ export interface CreateProductInterface {
   images: string[];
   variants: ProductVariantInput[];
   featured: boolean;
+  active: boolean;
 }
 
 export function emptyVariantRow(): ProductVariantInput {

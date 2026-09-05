@@ -90,6 +90,22 @@ export default function InnerProductForm(props: ProductFormProps) {
             </span>
           </span>
         </label>
+        <label className="sm:col-span-4 flex cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={props.values.active !== false}
+            onChange={(event) =>
+              props.setFieldValue("active", event.target.checked)
+            }
+            className="rounded border-[#14110e]/20 text-[#1f4a45] focus:ring-[#1f4a45]"
+          />
+          <span>
+            فعال در فروشگاه
+            <span className="mr-2 text-xs text-[#6b6459]">
+              اگر خاموش باشد فقط در پنل دیده می‌شود (آرشیو)
+            </span>
+          </span>
+        </label>
         <ProductVariantsField
           value={props.values.variants ?? []}
           onChange={(next) => {

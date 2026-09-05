@@ -30,4 +30,6 @@ export default interface Product {
   variants?: ProductVariant[];
   /** pin on the public shop homepage */
   featured?: boolean;
+  /** false = archived / hidden from the public shop */
+  active?: boolean;
 }
