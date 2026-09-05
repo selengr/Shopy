@@ -48,6 +48,11 @@ export function nextStatuses(status: OrderStatus): OrderStatus[] {
   }
 }
 
+/** Buyer can cancel before packing starts. */
+export function canCustomerCancel(order: { status: OrderStatus }) {
+  return order.status === "pending" || order.status === "paid";
+}
+
 export function formatInvoiceDate(iso: string) {
   try {
     return new Date(iso).toLocaleDateString("fa-IR", {

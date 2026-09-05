@@ -30,6 +30,7 @@ I started this around 2022 on Next.js 12, left it alone for a long time, then dr
 - order lifecycle through delivered; SEO basics (`robots`, `sitemap`, 404)
 - shipment tracking codes when the seller marks an order as shipped
 - product photo galleries (up to 6 images; first is the cover)
+- customers can cancel pending / paid orders from `/shop/account`
 
 Default mode needs no backend: `NEXT_PUBLIC_LOCAL_AUTH=true`. Sign in as `09121111111`, grab the code from the toast / next screen (it stays up a bit longer so you can copy it), and you're in. Shop is `/shop`.
 
@@ -39,7 +40,7 @@ Default mode needs no backend: `NEXT_PUBLIC_LOCAL_AUTH=true`. Sign in as `091211
 2. Add something to the cart (variant products open the product page). Try coupon `WELCOME10` or `SAVE50K`. Optional checkout note goes to the seller.
 3. Checkout COD → you land on an order receipt. Track with the same phone, or try sample **1048** / `09123334444`.
 4. Seller: `/auth/login` as `09121111111`, then `/panel` for orders / analytics / notifications. Move a packed order to shipped (add a tracking code) → delivered.
-5. Customer account: `/shop/account` with e.g. `09129876543` (seeded buyer with an address). Track **1045** / `09120001111` to see a Tipax code. Returns: order **1045** is shipped and has a pending return in `/panel/returns`.
+5. Customer account: `/shop/account` with e.g. `09129876543` (seeded buyer). Try cancelling pending order **1049**. Track **1045** / `09120001111` for a Tipax code. Returns: order **1045** is shipped and has a pending return in `/panel/returns`.
 6. Staff without admin powers: `09122222222`.
 
 Hard refresh once after pulling if seeded data looks old (local data version bumps wipe the mock DB).

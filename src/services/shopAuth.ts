@@ -48,3 +48,8 @@ export async function GetMyShopOrders() {
     returns: (res.data?.returns ?? []) as ReturnRequest[],
   };
 }
+
+export async function CancelMyShopOrder(orderId: number) {
+  const res = await callApi().post(`/shop/account/orders/${orderId}/cancel`, {});
+  return res.data?.order as Order;
+}

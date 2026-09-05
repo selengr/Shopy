@@ -16,7 +16,7 @@ import { STOCK_ALERT_THRESHOLD } from "@/helpers/stockAlerts";
 import type { OrderNotification } from "@/helpers/notifications";
 
 const DATA_VERSION_KEY = "shopy_data_v";
-const DATA_VERSION = "19";
+const DATA_VERSION = "20";
 const USERS_KEY = "shopy_users";
 const PRODUCTS_KEY = "shopy_products";
 const ORDERS_KEY = "shopy_orders";
@@ -281,6 +281,31 @@ function daysAgo(days: number, hours = 10) {
 
 function seedOrders(): Order[] {
   return [
+    {
+      id: 1049,
+      customerName: "امیر حسینی",
+      customerPhone: "09129876543",
+      customerId: 1,
+      items: [
+        {
+          productId: 8,
+          title: "لیوان سرامیک",
+          emoji: "☕",
+          image: "/products/mug.jpg",
+          price: 240000,
+          qty: 1,
+        },
+      ],
+      subtotal: 240000,
+      shippingMethodId: 1,
+      shippingTitle: "تحویل حضوری",
+      shippingFee: 0,
+      total: 240000,
+      status: "pending",
+      paymentMethod: "cod",
+      note: "نمونه برای لغو از حساب مشتری",
+      created_at: daysAgo(0, 8),
+    },
     {
       id: 1048,
       customerName: "نگار احمدی",

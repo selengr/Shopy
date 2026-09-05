@@ -10,6 +10,7 @@ import EmptyList from "@/components/shared/emptyList";
 import OrderStatusBadge from "@/components/orders/orderStatusBadge";
 import {
   GetMyShopOrders,
+  CancelMyShopOrder,
   GetShopCustomerMe,
   LoginShopCustomer,
   LogoutShopCustomer,
@@ -24,7 +25,7 @@ import {
   UpdateAddress,
 } from "@/services/shipping";
 import { formatToman } from "@/helpers/catalog";
-import { formatDay } from "@/helpers/orders";
+import { canCustomerCancel, formatDay } from "@/helpers/orders";
 import { formatAddressLine } from "@/helpers/shipping";
 import {
   canRequestReturn,
@@ -72,6 +73,7 @@ export default function ShopAccountPage() {
   const [returnOrderId, setReturnOrderId] = useState<number | null>(null);
   const [returnReason, setReturnReason] = useState("");
   const [returnBusy, setReturnBusy] = useState(false);
+  const [cancelBusyId, setCancelBusyId] = useState<number | null>(null);
 
   const startAuth = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -218,6 +220,26 @@ export default function ShopAccountPage() {
       toast.error("ذخیره نشد");
     } finally {
       setAddrBusy(false);
+    }
+  };
+
+  const cancelOrder = async (orderId: number) => {
+    if (!window.confirm("این سفارش لغو شود؟ موجودی برمی‌گردد.")) return;
+    setCancelBusyId(orderId);
+    try {
+      await CancelMyShopOrder(orderId);
+      await mutateOrders();
+      toast.success("سفارش لغو شد");
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        const first = Object.values(err.messages)[0];
+        const message = Array.isArray(first) ? first[0] : first;
+        toast.error(String(message ?? "لغو نشد"));
+        return;
+      }
+      toast.error("لغو نشد");
+    } finally {
+      setCancelBusyId(null);
     }
   };
 
@@ -417,18 +439,36 @@ export default function ShopAccountPage() {
                           مرجوعی: {returnStatusLabel(related.status)}
                         </p>
                       )}
-                      {canRequestReturn(order) && !related && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setReturnOrderId(order.id);
-                            setReturnReason("");
-                          }}
-                          className="mt-3 rounded-full px-3 py-1.5 text-xs ring-1 ring-[#14110e]/15"
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {canCustomerCancel(order) && (
+                          <button
+                            type="button"
+                            disabled={cancelBusyId === order.id}
+                            onClick={() => cancelOrder(order.id)}
+                            className="rounded-full px-3 py-1.5 text-xs text-red-700 ring-1 ring-red-200 disabled:opacity-50"
+                          >
+                            {cancelBusyId === order.id ? "..." : "لغو سفارش"}
+                          </button>
+                        )}
+                        {canRequestReturn(order) && !related && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReturnOrderId(order.id);
+                              setReturnReason("");
+                            }}
+                            className="rounded-full px-3 py-1.5 text-xs ring-1 ring-[#14110e]/15"
+                          >
+                            درخواست مرجوعی
+                          </button>
+                        )}
+                        <Link
+                          href={`/shop/track?orderId=${order.id}&phone=${encodeURIComponent(order.customerPhone)}`}
+                          className="rounded-full px-3 py-1.5 text-xs ring-1 ring-[#14110e]/15"
                         >
-                          درخواست مرجوعی
-                        </button>
-                      )}
+                          پیگیری
+                        </Link>
+                      </div>
                       {returnOrderId === order.id && (
                         <form onSubmit={submitReturn} className="mt-3 space-y-2">
                           <textarea

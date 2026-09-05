@@ -10,7 +10,7 @@ import {
   variantUnitPrice,
 } from "@/helpers/variants";
 import { normalizeImagesInput } from "@/helpers/productImages";
-import { nextStatuses } from "@/helpers/orders";
+import { nextStatuses, canCustomerCancel } from "@/helpers/orders";
 import { canRequestReturn } from "@/helpers/returns";
 import { makeAuthority, makeRefId } from "@/helpers/payments";
 import { averageRating, clampRating } from "@/helpers/reviews";
@@ -18,6 +18,7 @@ import { deliverOtpSms, shouldShowOtpHint } from "@/helpers/sms";
 import { permissionsForRole, roleFromPermissions } from "@/helpers/roles";
 import type { ShopRole } from "@/helpers/roles";
 import type Product from "@/models/product";
+import type Order from "@/models/order";
 import type { OrderItem, OrderStatus } from "@/models/order";
 import type { CouponType } from "@/models/coupon";
 import type Address from "@/models/address";
@@ -174,6 +175,24 @@ function restoreOrderStock(items: OrderItem[], products: Product[]): Product[] {
     const qty = moves.reduce((sum, item) => sum + item.qty, 0);
     return { ...product, stock: (product.stock ?? 0) + qty };
   });
+}
+
+function restoreCouponUsage(order: Pick<Order, "couponCode">) {
+  const code = order.couponCode?.trim();
+  if (!code) return;
+  const coupons = getCoupons();
+  const index = coupons.findIndex((item) => item.code === code);
+  if (index < 0) return;
+  coupons[index] = {
+    ...coupons[index],
+    usedCount: Math.max(0, (coupons[index].usedCount ?? 0) - 1),
+  };
+  saveCoupons(coupons);
+}
+
+function applyOrderCancellation(order: Order) {
+  saveProducts(restoreOrderStock(order.items, getProducts()));
+  restoreCouponUsage(order);
 }
 
 export async function handleLocalRequest(
@@ -1059,8 +1078,7 @@ export async function handleLocalRequest(
     }
 
     if (next === "cancelled") {
-      const products = restoreOrderStock(current.items, getProducts());
-      saveProducts(products);
+      applyOrderCancellation(current);
     }
 
     const trackingCode =
@@ -1405,6 +1423,40 @@ export async function handleLocalRequest(
         item.customerPhone === session.customer.phone,
     );
     return ok(config, { orders, returns });
+  }
+
+  const cancelMatch = path.match(/^\/shop\/account\/orders\/(\d+)\/cancel$/);
+  if (method === "POST" && cancelMatch) {
+    const session = getCustomerSession();
+    if (!session) throw fail(config, 401, { message: "unauthenticated" });
+    const id = Number(cancelMatch[1]);
+    const orders = getOrders();
+    const index = orders.findIndex((item) => item.id === id);
+    if (index < 0) throw fail(config, 404, { message: "not found" });
+    const current = orders[index];
+    if (
+      current.customerId !== session.customer.id &&
+      current.customerPhone !== session.customer.phone
+    ) {
+      throw fail(config, 404, { message: "not found" });
+    }
+    if (!canCustomerCancel(current)) {
+      throw fail(config, 422, {
+        errors: {
+          status: "فقط سفارش‌های در انتظار یا پرداخت‌شده را می‌شود لغو کرد",
+        },
+      });
+    }
+    applyOrderCancellation(current);
+    orders[index] = {
+      ...current,
+      status: "cancelled",
+      note: current.note
+        ? `${current.note} · لغو توسط مشتری`
+        : "لغو توسط مشتری",
+    };
+    saveOrders(orders);
+    return ok(config, { order: orders[index] });
   }
 
   if (method === "POST" && path === "/shop/account/returns") {
