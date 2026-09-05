@@ -12,7 +12,15 @@ import EmptyList from "@/components/shared/emptyList";
 import { GetShopProducts, CreateShopOrder } from "@/services/shop";
 import { ValidateShopCoupon } from "@/services/coupon";
 import { GetShopCustomerMe } from "@/services/shopAuth";
-import { CATEGORIES, categoryLabel, formatToman } from "@/helpers/catalog";
+import {
+  CATEGORIES,
+  categoryLabel,
+  formatToman,
+  hasSale,
+  SHOP_SORT_OPTIONS,
+  sortShopProducts,
+  type ShopSort,
+} from "@/helpers/catalog";
 import ProductPrice from "@/components/shared/productPrice";
 import {
   addToCart,
@@ -68,6 +76,9 @@ export default function ShopPage() {
   const locale = useSyncExternalStore(subscribeLocale, readLocale, () => "fa" as const);
   const [category, setCategory] = useState("");
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<ShopSort>("newest");
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [onSaleOnly, setOnSaleOnly] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [couponInput, setCouponInput] = useState("");
@@ -113,18 +124,26 @@ export default function ShopPage() {
   const usingNewAddress =
     needsAddress &&
     (addressId === "new" || addressId === null || savedAddresses.length === 0);
-  const showFeatured = category === "" && !query.trim();
+  const showFeatured =
+    category === "" &&
+    !query.trim() &&
+    sort === "newest" &&
+    !inStockOnly &&
+    !onSaleOnly;
   const featured = useMemo(() => {
     if (!showFeatured) return [];
     return (data ?? []).filter((item) => item.featured && productStock(item) > 0);
   }, [data, showFeatured]);
   const filtered = useMemo(() => {
-    const products = data ?? [];
-    return products.filter((item) => {
+    const products = (data ?? []).filter((item) => {
       const inCategory = category ? item.category === category : true;
-      return inCategory && productMatchesQuery(item, query);
+      if (!inCategory || !productMatchesQuery(item, query)) return false;
+      if (inStockOnly && productStock(item) < 1) return false;
+      if (onSaleOnly && !hasSale(item)) return false;
+      return true;
     });
-  }, [category, data, query]);
+    return sortShopProducts(products, sort);
+  }, [category, data, inStockOnly, onSaleOnly, query, sort]);
 
   const onAdd = (product: Product) => {
     if (hasVariants(product)) {
@@ -336,6 +355,54 @@ export default function ShopPage() {
         ))}
       </div>
 
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <label className="flex items-center gap-2 text-sm text-[#5c564d]">
+          <span>مرتب‌سازی</span>
+          <select
+            value={sort}
+            onChange={(event) => setSort(event.target.value as ShopSort)}
+            className="rounded-full border border-[#14110e]/10 bg-white px-3 py-1.5 text-sm"
+          >
+            {SHOP_SORT_OPTIONS.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          onClick={() => setInStockOnly((value) => !value)}
+          className={`rounded-full px-3 py-1.5 text-sm ${
+            inStockOnly ? "bg-[#1f4a45] text-white" : "bg-white ring-1 ring-[#14110e]/10"
+          }`}
+        >
+          فقط موجود
+        </button>
+        <button
+          type="button"
+          onClick={() => setOnSaleOnly((value) => !value)}
+          className={`rounded-full px-3 py-1.5 text-sm ${
+            onSaleOnly ? "bg-[#1f4a45] text-white" : "bg-white ring-1 ring-[#14110e]/10"
+          }`}
+        >
+          فقط تخفیف‌دار
+        </button>
+        {(inStockOnly || onSaleOnly || sort !== "newest") && (
+          <button
+            type="button"
+            onClick={() => {
+              setSort("newest");
+              setInStockOnly(false);
+              setOnSaleOnly(false);
+            }}
+            className="text-xs text-[#1f4a45] hover:underline"
+          >
+            پاک کردن فیلترها
+          </button>
+        )}
+      </div>
+
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.4fr_0.8fr]">
         <div>
           {loading ? (
@@ -343,7 +410,7 @@ export default function ShopPage() {
           ) : filtered.length === 0 ? (
             <EmptyList
               title="چیزی پیدا نشد"
-              description="عبارت یا دسته را عوض کن"
+              description="عبارت، دسته یا فیلتر را عوض کن"
             />
           ) : (
             <>

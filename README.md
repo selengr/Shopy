@@ -31,6 +31,7 @@ I started this around 2022 on Next.js 12, left it alone for a long time, then dr
 - shipment tracking codes when the seller marks an order as shipped
 - product photo galleries (up to 6 images; first is the cover)
 - customers can cancel pending / paid orders from `/shop/account`
+- shop catalog sort (newest / price / rating) plus in-stock and on-sale filters
 
 Default mode needs no backend: `NEXT_PUBLIC_LOCAL_AUTH=true`. Sign in as `09121111111`, grab the code from the toast / next screen (it stays up a bit longer so you can copy it), and you're in. Shop is `/shop`.
 
