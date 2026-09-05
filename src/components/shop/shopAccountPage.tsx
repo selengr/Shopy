@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
+import { motion } from "motion/react";
 import { toast } from "react-toastify";
 import ShopShell from "@/components/shop/shopShell";
 import LoadingBox from "@/components/shared/loadingBox";
@@ -243,348 +244,410 @@ export default function ShopAccountPage() {
     }
   };
 
+  const fieldClass =
+    "w-full rounded-2xl border border-[#14110e]/10 bg-white px-3 py-2.5 text-sm";
+
   return (
-    <ShopShell>
-      <h1 className="font-display text-3xl font-semibold">حساب مشتری</h1>
-      <p className="mt-2 text-sm text-[#5c564d]">
-        جدا از پنل فروشنده است. سفارش‌ها و آدرس‌هایت اینجا می‌ماند.
-      </p>
-
-      {isLoading && !customer && !error ? (
-        <div className="mt-8">
-          <LoadingBox />
+    <ShopShell flush>
+      <section className="relative overflow-hidden">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 50% at 90% 10%, rgba(244,239,230,0.14), transparent 50%), linear-gradient(165deg, #1f4a45 0%, #1a3d39 48%, #f4efe6 48%)",
+          }}
+        />
+        <div className="relative mx-auto max-w-6xl px-5 pt-16 pb-24 sm:px-8 sm:pt-24 sm:pb-32">
+          <motion.h1
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-display text-5xl font-bold tracking-tight text-[#f4efe6] sm:text-6xl"
+          >
+            حساب مشتری
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="mt-4 max-w-lg text-base leading-8 text-[#f4efe6]/75"
+          >
+            {customer
+              ? `سلام ${customer.name} — سفارش‌ها و آدرس‌هایت اینجاست.`
+              : "جدا از پنل فروشنده است. با موبایل وارد شو تا سفارش‌ها و آدرس‌هایت بماند."}
+          </motion.p>
         </div>
-      ) : customer ? (
-        <div className="mt-8 space-y-8">
-          <div className="rounded-3xl border border-[#14110e]/8 bg-white/85 p-5 shadow-sm">
-            <p className="font-medium">{customer.name}</p>
-            <p className="mt-1 text-sm text-[#5c564d]" dir="ltr">
-              {customer.phone}
-            </p>
-            <button
-              type="button"
-              onClick={logout}
-              className="mt-4 rounded-full px-4 py-2 text-sm ring-1 ring-[#14110e]/15"
-            >
-              خروج
-            </button>
-          </div>
+      </section>
 
-          <div>
-            <h2 className="font-display text-xl font-semibold">دفترچه آدرس</h2>
-            <ul className="mt-4 space-y-3">
-              {(addresses ?? []).map((addr) => (
-                <li
-                  key={addr.id}
-                  className="rounded-3xl border border-[#14110e]/8 bg-white/85 px-4 py-3 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium">
-                        {addr.label}
-                        {addr.isDefault ? " · پیش‌فرض" : ""}
-                      </p>
-                      <p className="mt-1 text-xs text-[#6b6459]">
-                        {addr.recipientName} ·{" "}
-                        <span dir="ltr">{addr.phone}</span>
-                      </p>
-                      <p className="mt-1 text-xs text-[#6b6459]">
-                        {formatAddressLine(addr)}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 flex-col gap-2">
-                      {!addr.isDefault && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await UpdateAddress(addr.id, { isDefault: true });
-                            await mutateAddresses();
-                            toast.success("پیش‌فرض شد");
-                          }}
-                          className="rounded-full px-3 py-1 text-xs ring-1 ring-[#14110e]/15"
-                        >
-                          پیش‌فرض
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          await DeleteAddress(addr.id);
-                          await mutateAddresses();
-                          toast.info("حذف شد");
-                        }}
-                        className="rounded-full px-3 py-1 text-xs text-red-700 ring-1 ring-red-200"
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <form
-              onSubmit={addAddress}
-              className="mt-4 grid gap-2 rounded-3xl border border-[#14110e]/8 bg-white/85 p-4 shadow-sm sm:grid-cols-2"
-            >
-              <input
-                value={addrLabel}
-                onChange={(event) => setAddrLabel(event.target.value)}
-                placeholder="برچسب"
-                className="rounded-2xl border border-[#14110e]/10 px-3 py-2 text-sm"
-              />
-              <input
-                value={addrName || customer.name}
-                onChange={(event) => setAddrName(event.target.value)}
-                placeholder="نام گیرنده"
-                className="rounded-2xl border border-[#14110e]/10 px-3 py-2 text-sm"
-              />
-              <input
-                value={addrPhone || customer.phone}
-                onChange={(event) => setAddrPhone(event.target.value)}
-                placeholder="موبایل"
-                inputMode="tel"
-                dir="ltr"
-                className="rounded-2xl border border-[#14110e]/10 px-3 py-2 text-sm sm:col-span-2"
-              />
-              <input
-                value={province}
-                onChange={(event) => setProvince(event.target.value)}
-                placeholder="استان"
-                className="rounded-2xl border border-[#14110e]/10 px-3 py-2 text-sm"
-              />
-              <input
-                value={city}
-                onChange={(event) => setCity(event.target.value)}
-                placeholder="شهر"
-                className="rounded-2xl border border-[#14110e]/10 px-3 py-2 text-sm"
-              />
-              <textarea
-                value={street}
-                onChange={(event) => setStreet(event.target.value)}
-                placeholder="خیابان، پلاک، واحد"
-                rows={2}
-                className="rounded-2xl border border-[#14110e]/10 px-3 py-2 text-sm sm:col-span-2"
-              />
-              <input
-                value={postalCode}
-                onChange={(event) => setPostalCode(event.target.value)}
-                placeholder="کد پستی (اختیاری)"
-                dir="ltr"
-                className="rounded-2xl border border-[#14110e]/10 px-3 py-2 text-sm sm:col-span-2"
-              />
-              <button
-                type="submit"
-                disabled={addrBusy}
-                className="rounded-full bg-[#1f4a45] px-4 py-2.5 text-sm text-white disabled:opacity-50 sm:col-span-2"
+      <section className="-mt-16 bg-[#f4efe6] pb-16 sm:pb-20">
+        <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
+          {isLoading && !customer && !error ? (
+            <LoadingBox />
+          ) : customer ? (
+            <div className="space-y-12">
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-wrap items-end justify-between gap-4 border border-[#14110e]/10 bg-white/95 px-5 py-5 shadow-[0_24px_60px_-36px_rgba(20,17,14,0.45)] sm:px-6"
               >
-                {addrBusy ? "..." : "افزودن آدرس"}
-              </button>
-            </form>
-          </div>
-
-          <div>
-            <h2 className="font-display text-xl font-semibold">سفارش‌های من</h2>
-            {!orders || orders.length === 0 ? (
-              <div className="mt-4">
-                <EmptyList
-                  title="هنوز سفارشی نیست"
-                  description="از فروشگاه خرید کن"
-                />
-                <Link
-                  href="/shop"
-                  className="mt-3 inline-flex rounded-full bg-[#1f4a45] px-4 py-2 text-sm text-white"
+                <div>
+                  <p className="font-display text-2xl font-semibold">
+                    {customer.name}
+                  </p>
+                  <p className="mt-1 text-sm text-[#5c564d]" dir="ltr">
+                    {customer.phone}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="rounded-full px-4 py-2 text-sm ring-1 ring-[#14110e]/15 transition hover:bg-[#f4efe6]"
                 >
-                  فروشگاه
-                </Link>
-              </div>
-            ) : (
-              <ul className="mt-4 space-y-3">
-                {orders.map((order) => {
-                  const related = returns.find(
-                    (item) => item.orderId === order.id,
-                  );
-                  return (
+                  خروج
+                </button>
+              </motion.div>
+
+              <div>
+                <h2 className="font-display text-2xl font-semibold">
+                  دفترچه آدرس
+                </h2>
+                <ul className="mt-5 space-y-3">
+                  {(addresses ?? []).map((addr) => (
                     <li
-                      key={order.id}
-                      className="rounded-3xl border border-[#14110e]/8 bg-white/85 px-4 py-3 shadow-sm"
+                      key={addr.id}
+                      className="border border-[#14110e]/10 bg-white/90 px-4 py-4"
                     >
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-medium">
-                            #{order.id.toLocaleString("fa-IR")} ·{" "}
-                            {formatToman(order.total)}
+                            {addr.label}
+                            {addr.isDefault ? " · پیش‌فرض" : ""}
                           </p>
-                          <p className="text-xs text-[#6b6459]">
-                            {formatDay(order.created_at)}
-                            {order.shippingTitle
-                              ? ` · ${order.shippingTitle}`
-                              : ""}
-                            {order.couponCode ? ` · ${order.couponCode}` : ""}
+                          <p className="mt-1 text-xs text-[#6b6459]">
+                            {addr.recipientName} ·{" "}
+                            <span dir="ltr">{addr.phone}</span>
                           </p>
-                          {(order.carrier || order.trackingCode) && (
-                            <p className="mt-1 text-xs text-emerald-800" dir="ltr">
-                              {[order.carrier, order.trackingCode]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </p>
-                          )}
+                          <p className="mt-1 text-xs text-[#6b6459]">
+                            {formatAddressLine(addr)}
+                          </p>
                         </div>
-                        <OrderStatusBadge status={order.status} />
-                      </div>
-                      {related && (
-                        <p
-                          className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs ${returnStatusClass(related.status)}`}
-                        >
-                          مرجوعی: {returnStatusLabel(related.status)}
-                        </p>
-                      )}
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {canCustomerCancel(order) && (
-                          <button
-                            type="button"
-                            disabled={cancelBusyId === order.id}
-                            onClick={() => cancelOrder(order.id)}
-                            className="rounded-full px-3 py-1.5 text-xs text-red-700 ring-1 ring-red-200 disabled:opacity-50"
-                          >
-                            {cancelBusyId === order.id ? "..." : "لغو سفارش"}
-                          </button>
-                        )}
-                        {canRequestReturn(order) && !related && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setReturnOrderId(order.id);
-                              setReturnReason("");
-                            }}
-                            className="rounded-full px-3 py-1.5 text-xs ring-1 ring-[#14110e]/15"
-                          >
-                            درخواست مرجوعی
-                          </button>
-                        )}
-                        <Link
-                          href={`/shop/track?orderId=${order.id}&phone=${encodeURIComponent(order.customerPhone)}`}
-                          className="rounded-full px-3 py-1.5 text-xs ring-1 ring-[#14110e]/15"
-                        >
-                          پیگیری
-                        </Link>
-                      </div>
-                      {returnOrderId === order.id && (
-                        <form onSubmit={submitReturn} className="mt-3 space-y-2">
-                          <textarea
-                            value={returnReason}
-                            onChange={(event) =>
-                              setReturnReason(event.target.value)
-                            }
-                            rows={2}
-                            placeholder="چرا می‌خوای مرجوع کنی؟"
-                            className="w-full rounded-2xl border border-[#14110e]/10 px-3 py-2 text-sm"
-                          />
-                          <div className="flex gap-2">
-                            <button
-                              type="submit"
-                              disabled={returnBusy}
-                              className="rounded-full bg-[#1f4a45] px-3 py-1.5 text-xs text-white disabled:opacity-50"
-                            >
-                              {returnBusy ? "..." : "ثبت درخواست"}
-                            </button>
+                        <div className="flex shrink-0 flex-col gap-2">
+                          {!addr.isDefault && (
                             <button
                               type="button"
-                              onClick={() => setReturnOrderId(null)}
+                              onClick={async () => {
+                                await UpdateAddress(addr.id, { isDefault: true });
+                                await mutateAddresses();
+                                toast.success("پیش‌فرض شد");
+                              }}
+                              className="rounded-full px-3 py-1 text-xs ring-1 ring-[#14110e]/15"
+                            >
+                              پیش‌فرض
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await DeleteAddress(addr.id);
+                              await mutateAddresses();
+                              toast.info("حذف شد");
+                            }}
+                            className="rounded-full px-3 py-1 text-xs text-red-700 ring-1 ring-red-200"
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <form
+                  onSubmit={addAddress}
+                  className="mt-5 grid gap-2 border border-[#14110e]/10 bg-white/90 p-4 sm:grid-cols-2"
+                >
+                  <input
+                    value={addrLabel}
+                    onChange={(event) => setAddrLabel(event.target.value)}
+                    placeholder="برچسب"
+                    className={fieldClass}
+                  />
+                  <input
+                    value={addrName || customer.name}
+                    onChange={(event) => setAddrName(event.target.value)}
+                    placeholder="نام گیرنده"
+                    className={fieldClass}
+                  />
+                  <input
+                    value={addrPhone || customer.phone}
+                    onChange={(event) => setAddrPhone(event.target.value)}
+                    placeholder="موبایل"
+                    inputMode="tel"
+                    dir="ltr"
+                    className={`${fieldClass} sm:col-span-2`}
+                  />
+                  <input
+                    value={province}
+                    onChange={(event) => setProvince(event.target.value)}
+                    placeholder="استان"
+                    className={fieldClass}
+                  />
+                  <input
+                    value={city}
+                    onChange={(event) => setCity(event.target.value)}
+                    placeholder="شهر"
+                    className={fieldClass}
+                  />
+                  <textarea
+                    value={street}
+                    onChange={(event) => setStreet(event.target.value)}
+                    placeholder="خیابان، پلاک، واحد"
+                    rows={2}
+                    className={`${fieldClass} sm:col-span-2`}
+                  />
+                  <input
+                    value={postalCode}
+                    onChange={(event) => setPostalCode(event.target.value)}
+                    placeholder="کد پستی (اختیاری)"
+                    dir="ltr"
+                    className={`${fieldClass} sm:col-span-2`}
+                  />
+                  <button
+                    type="submit"
+                    disabled={addrBusy}
+                    className="rounded-full bg-[#1f4a45] px-4 py-2.5 text-sm text-white disabled:opacity-50 sm:col-span-2"
+                  >
+                    {addrBusy ? "..." : "افزودن آدرس"}
+                  </button>
+                </form>
+              </div>
+
+              <div>
+                <h2 className="font-display text-2xl font-semibold">
+                  سفارش‌های من
+                </h2>
+                {!orders || orders.length === 0 ? (
+                  <div className="mt-5">
+                    <EmptyList
+                      title="هنوز سفارشی نیست"
+                      description="از فروشگاه خرید کن"
+                    />
+                    <Link
+                      href="/shop"
+                      className="mt-4 inline-flex rounded-full bg-[#1f4a45] px-4 py-2 text-sm text-white"
+                    >
+                      فروشگاه
+                    </Link>
+                  </div>
+                ) : (
+                  <ul className="mt-5 space-y-3">
+                    {orders.map((order) => {
+                      const related = returns.find(
+                        (item) => item.orderId === order.id,
+                      );
+                      return (
+                        <li
+                          key={order.id}
+                          className="border border-[#14110e]/10 bg-white/90 px-4 py-4"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-medium">
+                                #{order.id.toLocaleString("fa-IR")} ·{" "}
+                                {formatToman(order.total)}
+                              </p>
+                              <p className="text-xs text-[#6b6459]">
+                                {formatDay(order.created_at)}
+                                {order.shippingTitle
+                                  ? ` · ${order.shippingTitle}`
+                                  : ""}
+                                {order.couponCode
+                                  ? ` · ${order.couponCode}`
+                                  : ""}
+                              </p>
+                              {(order.carrier || order.trackingCode) && (
+                                <p
+                                  className="mt-1 text-xs text-[#1f4a45]"
+                                  dir="ltr"
+                                >
+                                  {[order.carrier, order.trackingCode]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </p>
+                              )}
+                            </div>
+                            <OrderStatusBadge status={order.status} />
+                          </div>
+                          {related && (
+                            <p
+                              className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs ${returnStatusClass(related.status)}`}
+                            >
+                              مرجوعی: {returnStatusLabel(related.status)}
+                            </p>
+                          )}
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {canCustomerCancel(order) && (
+                              <button
+                                type="button"
+                                disabled={cancelBusyId === order.id}
+                                onClick={() => cancelOrder(order.id)}
+                                className="rounded-full px-3 py-1.5 text-xs text-red-700 ring-1 ring-red-200 disabled:opacity-50"
+                              >
+                                {cancelBusyId === order.id
+                                  ? "..."
+                                  : "لغو سفارش"}
+                              </button>
+                            )}
+                            {canRequestReturn(order) && !related && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setReturnOrderId(order.id);
+                                  setReturnReason("");
+                                }}
+                                className="rounded-full px-3 py-1.5 text-xs ring-1 ring-[#14110e]/15"
+                              >
+                                درخواست مرجوعی
+                              </button>
+                            )}
+                            <Link
+                              href={`/shop/track?orderId=${order.id}&phone=${encodeURIComponent(order.customerPhone)}`}
                               className="rounded-full px-3 py-1.5 text-xs ring-1 ring-[#14110e]/15"
                             >
-                              انصراف
-                            </button>
+                              پیگیری
+                            </Link>
                           </div>
-                        </form>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
+                          {returnOrderId === order.id && (
+                            <form
+                              onSubmit={submitReturn}
+                              className="mt-3 space-y-2"
+                            >
+                              <textarea
+                                value={returnReason}
+                                onChange={(event) =>
+                                  setReturnReason(event.target.value)
+                                }
+                                rows={2}
+                                placeholder="چرا می‌خوای مرجوع کنی؟"
+                                className={fieldClass}
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  type="submit"
+                                  disabled={returnBusy}
+                                  className="rounded-full bg-[#1f4a45] px-3 py-1.5 text-xs text-white disabled:opacity-50"
+                                >
+                                  {returnBusy ? "..." : "ثبت درخواست"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setReturnOrderId(null)}
+                                  className="rounded-full px-3 py-1.5 text-xs ring-1 ring-[#14110e]/15"
+                                >
+                                  انصراف
+                                </button>
+                              </div>
+                            </form>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-auto max-w-md border border-[#14110e]/10 bg-white/95 p-6 shadow-[0_24px_60px_-36px_rgba(20,17,14,0.45)]"
+            >
+              {mode === "verify" ? (
+                <form onSubmit={verify} className="space-y-4">
+                  <p className="font-display text-xl font-semibold">
+                    کد تایید
+                  </p>
+                  <p className="text-sm text-[#5c564d]">
+                    کد را وارد کن تا وارد حساب شوی.
+                  </p>
+                  {hint && (
+                    <p className="bg-[#1f4a45]/10 px-3 py-2 text-center text-sm text-[#1f4a45]">
+                      کد تست: {hint}
+                    </p>
+                  )}
+                  <input
+                    value={code}
+                    onChange={(event) => setCode(event.target.value)}
+                    inputMode="numeric"
+                    dir="ltr"
+                    className={`${fieldClass} text-center tracking-[0.3em]`}
+                  />
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full rounded-full bg-[#1f4a45] px-4 py-2.5 text-sm text-white disabled:opacity-50"
+                  >
+                    {saving ? "..." : "تایید و ورود"}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={startAuth} className="space-y-4">
+                  <div className="flex gap-2 text-sm">
+                    <button
+                      type="button"
+                      onClick={() => setMode("login")}
+                      className={`rounded-full px-3 py-1.5 ${
+                        mode === "login"
+                          ? "bg-[#1f4a45] text-white"
+                          : "ring-1 ring-[#14110e]/15"
+                      }`}
+                    >
+                      ورود
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMode("register")}
+                      className={`rounded-full px-3 py-1.5 ${
+                        mode === "register"
+                          ? "bg-[#1f4a45] text-white"
+                          : "ring-1 ring-[#14110e]/15"
+                      }`}
+                    >
+                      ثبت‌نام
+                    </button>
+                  </div>
+                  {mode === "register" && (
+                    <input
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      placeholder="نام"
+                      className={fieldClass}
+                    />
+                  )}
+                  <input
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
+                    placeholder="09xxxxxxxxx"
+                    inputMode="tel"
+                    dir="ltr"
+                    className={fieldClass}
+                  />
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full rounded-full bg-[#1f4a45] px-4 py-2.5 text-sm text-white disabled:opacity-50"
+                  >
+                    {saving ? "..." : "دریافت کد"}
+                  </button>
+                  <p className="text-center text-xs text-[#6b6459]">
+                    نمونه:{" "}
+                    <span dir="ltr">09129876543</span>
+                  </p>
+                </form>
+              )}
+            </motion.div>
+          )}
         </div>
-      ) : mode === "verify" ? (
-        <form
-          onSubmit={verify}
-          className="mt-8 max-w-md space-y-4 rounded-3xl border border-[#14110e]/8 bg-white/85 p-5 shadow-sm"
-        >
-          <p className="text-sm text-[#5c564d]">کد تایید را وارد کن</p>
-          {hint && (
-            <p className="rounded-full bg-[#1f4a45]/10 px-3 py-2 text-center text-sm text-[#1f4a45]">
-              کد تست: {hint}
-            </p>
-          )}
-          <input
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-            inputMode="numeric"
-            dir="ltr"
-            className="w-full rounded-2xl border border-[#14110e]/10 px-3 py-2.5 text-center tracking-[0.3em]"
-          />
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full rounded-full bg-[#1f4a45] px-4 py-2.5 text-sm text-white disabled:opacity-50"
-          >
-            {saving ? "..." : "تایید و ورود"}
-          </button>
-        </form>
-      ) : (
-        <form
-          onSubmit={startAuth}
-          className="mt-8 max-w-md space-y-4 rounded-3xl border border-[#14110e]/8 bg-white/85 p-5 shadow-sm"
-        >
-          <div className="flex gap-2 text-sm">
-            <button
-              type="button"
-              onClick={() => setMode("login")}
-              className={`rounded-full px-3 py-1.5 ${
-                mode === "login"
-                  ? "bg-[#1f4a45] text-white"
-                  : "ring-1 ring-[#14110e]/15"
-              }`}
-            >
-              ورود
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("register")}
-              className={`rounded-full px-3 py-1.5 ${
-                mode === "register"
-                  ? "bg-[#1f4a45] text-white"
-                  : "ring-1 ring-[#14110e]/15"
-              }`}
-            >
-              ثبت‌نام
-            </button>
-          </div>
-          {mode === "register" && (
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="نام"
-              className="w-full rounded-2xl border border-[#14110e]/10 px-3 py-2.5 text-sm"
-            />
-          )}
-          <input
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            placeholder="09xxxxxxxxx"
-            inputMode="tel"
-            dir="ltr"
-            className="w-full rounded-2xl border border-[#14110e]/10 px-3 py-2.5 text-sm"
-          />
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full rounded-full bg-[#1f4a45] px-4 py-2.5 text-sm text-white disabled:opacity-50"
-          >
-            {saving ? "..." : "دریافت کد"}
-          </button>
-        </form>
-      )}
+      </section>
     </ShopShell>
   );
 }
