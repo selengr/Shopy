@@ -33,15 +33,16 @@ I started this around 2022 on Next.js 12, left it alone for a long time, then dr
 - customers can cancel pending / paid orders from `/shop/account`
 - shop catalog sort (newest / price / rating) plus in-stock and on-sale filters
 - soft-archive products (hide from `/shop` without deleting)
+- back-in-stock waitlist (`/panel/waitlist`) — customers leave a name + phone on sold-out product pages
 
 Default mode needs no backend: `NEXT_PUBLIC_LOCAL_AUTH=true`. Sign in as `09121111111`, grab the code from the toast / next screen (it stays up a bit longer so you can copy it), and you're in. Shop is `/shop`.
 
 ### Quick demo walk
 
-1. Open `/shop` — featured section, then browse. Open the white sneakers for a 3-photo gallery. تیشرت and کیف have sale prices. «شال پاییزه» is sold out; ساعت مچی is archived so it won’t appear in the shop.
+1. Open `/shop` — featured section, then browse. Open the white sneakers for a 3-photo gallery. تیشرت and کیف have sale prices. «شال پاییزه» is sold out (try the waitlist form); ساعت مچی is archived so it won’t appear in the shop.
 2. Add something to the cart (variant products open the product page). Try coupon `WELCOME10` or `SAVE50K`. Optional checkout note goes to the seller.
 3. Checkout COD → you land on an order receipt. Track with the same phone, or try sample **1048** / `09123334444`.
-4. Seller: `/auth/login` as `09121111111`, then `/panel` for orders / analytics / notifications. Move a packed order to shipped (add a tracking code) → delivered.
+4. Seller: `/auth/login` as `09121111111`, then `/panel` for orders / analytics / notifications. Move a packed order to shipped (add a tracking code) → delivered. Check `/panel/waitlist` for restock requests.
 5. Customer account: `/shop/account` with e.g. `09129876543` (seeded buyer). Try cancelling pending order **1049**. Track **1045** / `09120001111` for a Tipax code. Returns: order **1045** is shipped and has a pending return in `/panel/returns`.
 6. Staff without admin powers: `09122222222`.
 

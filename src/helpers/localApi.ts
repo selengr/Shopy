@@ -6,6 +6,7 @@ import { resolveShippingFee } from "@/helpers/shipping";
 import {
   hasVariants,
   normalizeVariants,
+  productStock,
   variantLabel,
   variantUnitPrice,
 } from "@/helpers/variants";
@@ -48,6 +49,7 @@ import {
   getStockAlerts,
   getOrderNotifications,
   getUsers,
+  getWaitlist,
   nextId,
   publicUser,
   pushOrderNotification,
@@ -72,6 +74,7 @@ import {
   saveShopSettings,
   saveStockAlerts,
   saveUsers,
+  saveWaitlist,
 } from "@/helpers/localDb";
 
 function pathOf(config: InternalAxiosRequestConfig) {
@@ -613,6 +616,57 @@ export async function handleLocalRequest(
     };
     saveReviews([review, ...reviews]);
     return ok(config, { review }, 201);
+  }
+
+  const shopWaitlistMatch = path.match(/^\/shop\/products\/(\d+)\/waitlist$/);
+  if (method === "POST" && shopWaitlistMatch) {
+    const id = Number(shopWaitlistMatch[1]);
+    const product = getProducts().find((item) => item.id === id);
+    if (!product || !isProductActive(product)) {
+      throw fail(config, 404, { message: "not found" });
+    }
+    if (productStock(product) > 0) {
+      throw fail(config, 422, {
+        errors: { productId: "این محصول الان موجود است" },
+      });
+    }
+
+    const customerName = String(body.customerName ?? "").trim();
+    const phoneRaw = String(body.customerPhone ?? "").trim();
+    const customerPhone = normalizeIranianPhone(phoneRaw);
+
+    if (customerName.length < 2) {
+      throw fail(config, 422, { errors: { customerName: "نام را بنویس" } });
+    }
+    if (!iranianPhoneRegExp.test(customerPhone)) {
+      throw fail(config, 422, {
+        errors: { customerPhone: "شماره درست نیست" },
+      });
+    }
+
+    const list = getWaitlist();
+    const already = list.find(
+      (item) =>
+        item.productId === id &&
+        item.customerPhone === customerPhone &&
+        !item.done,
+    );
+    if (already) {
+      throw fail(config, 422, {
+        errors: { customerPhone: "قبلاً برای این محصول ثبت شده‌ای" },
+      });
+    }
+
+    const entry = {
+      id: nextId(list),
+      productId: id,
+      productTitle: product.title,
+      customerName,
+      customerPhone,
+      created_at: new Date().toISOString(),
+    };
+    saveWaitlist([entry, ...list]);
+    return ok(config, { entry }, 201);
   }
 
   if (method === "GET" && path === "/orders") {
@@ -1750,6 +1804,28 @@ export async function handleLocalRequest(
     const session = getSession();
     if (!session) throw fail(config, 401, { message: "unauthenticated" });
     return ok(config, { returns: getReturns() });
+  }
+
+  if (method === "GET" && path === "/waitlist") {
+    const session = getSession();
+    if (!session) throw fail(config, 401, { message: "unauthenticated" });
+    const entries = [...getWaitlist()].sort((a, b) =>
+      b.created_at.localeCompare(a.created_at),
+    );
+    return ok(config, { waitlist: entries });
+  }
+
+  const waitlistDoneMatch = path.match(/^\/waitlist\/(\d+)\/done$/);
+  if (method === "POST" && waitlistDoneMatch) {
+    const session = getSession();
+    if (!session) throw fail(config, 401, { message: "unauthenticated" });
+    const id = Number(waitlistDoneMatch[1]);
+    const list = getWaitlist();
+    const index = list.findIndex((item) => item.id === id);
+    if (index < 0) throw fail(config, 404, { message: "not found" });
+    list[index] = { ...list[index], done: true };
+    saveWaitlist(list);
+    return ok(config, { entry: list[index] });
   }
 
   const returnResolveMatch = path.match(/^\/returns\/(\d+)\/(approve|reject)$/);

@@ -8,6 +8,7 @@ import type Address from "@/models/address";
 import type ShippingMethod from "@/models/shipping";
 import type ReturnRequest from "@/models/returnRequest";
 import type ShopSettings from "@/models/shopSettings";
+import type { WaitlistEntry } from "@/models/waitlist";
 import { seedShippingMethods } from "@/helpers/shipping";
 import { defaultShopSettings } from "@/helpers/shopSettings";
 import { productStock } from "@/helpers/variants";
@@ -16,7 +17,7 @@ import { STOCK_ALERT_THRESHOLD } from "@/helpers/stockAlerts";
 import type { OrderNotification } from "@/helpers/notifications";
 
 const DATA_VERSION_KEY = "shopy_data_v";
-const DATA_VERSION = "21";
+const DATA_VERSION = "22";
 const USERS_KEY = "shopy_users";
 const PRODUCTS_KEY = "shopy_products";
 const ORDERS_KEY = "shopy_orders";
@@ -28,6 +29,7 @@ const CUSTOMERS_KEY = "shopy_customers";
 const ADDRESSES_KEY = "shopy_addresses";
 const SHIPPING_KEY = "shopy_shipping_methods";
 const RETURNS_KEY = "shopy_returns";
+const WAITLIST_KEY = "shopy_waitlist";
 const SETTINGS_KEY = "shopy_shop_settings";
 const CUSTOMER_SESSION_KEY = "shopy_customer_session";
 const CUSTOMER_OTP_KEY = "shopy_customer_otp";
@@ -686,6 +688,19 @@ function seedReturns(): ReturnRequest[] {
   ];
 }
 
+function seedWaitlist(): WaitlistEntry[] {
+  return [
+    {
+      id: 1,
+      productId: 9,
+      productTitle: "شال پاییزه",
+      customerName: "مینا رضایی",
+      customerPhone: "09125556666",
+      created_at: daysAgo(1, 11),
+    },
+  ];
+}
+
 export function getUsers(): StoredUser[] {
   ensureSeed();
   const users = readJson<StoredUser[]>(USERS_KEY, []);
@@ -725,6 +740,7 @@ function ensureSeed() {
   writeJson(ADDRESSES_KEY, seedAddresses());
   writeJson(SHIPPING_KEY, seedShippingMethods());
   writeJson(RETURNS_KEY, seedReturns());
+  writeJson(WAITLIST_KEY, seedWaitlist());
   writeJson(SETTINGS_KEY, defaultShopSettings());
   const users = readJson<StoredUser[]>(USERS_KEY, []);
   if (users.length === 0) writeJson(USERS_KEY, seedUsers());
@@ -887,6 +903,15 @@ export function getReturns(): ReturnRequest[] {
 
 export function saveReturns(items: ReturnRequest[]) {
   writeJson(RETURNS_KEY, items);
+}
+
+export function getWaitlist(): WaitlistEntry[] {
+  ensureSeed();
+  return readJson<WaitlistEntry[]>(WAITLIST_KEY, []);
+}
+
+export function saveWaitlist(items: WaitlistEntry[]) {
+  writeJson(WAITLIST_KEY, items);
 }
 
 export function getShopSettings(): ShopSettings {

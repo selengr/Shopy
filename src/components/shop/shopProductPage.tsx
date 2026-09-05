@@ -42,6 +42,7 @@ import {
   variantUnitPrice,
 } from "@/helpers/variants";
 import ValidationError from "@/exceptions/validationError";
+import { JoinProductWaitlist } from "@/services/waitlist";
 
 export default function ShopProductPage({
   params,
@@ -70,6 +71,10 @@ export default function ShopProductPage({
   const [saving, setSaving] = useState(false);
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
+  const [waitName, setWaitName] = useState("");
+  const [waitPhone, setWaitPhone] = useState("");
+  const [waitSaving, setWaitSaving] = useState(false);
+  const [waitJoined, setWaitJoined] = useState(false);
 
   const product = productData?.product;
   const reviews = reviewData?.reviews ?? [];
@@ -112,6 +117,31 @@ export default function ShopProductPage({
     }
   };
 
+  const submitWaitlist = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setWaitSaving(true);
+    try {
+      await JoinProductWaitlist(id, {
+        customerName: waitName.trim(),
+        customerPhone: waitPhone.trim(),
+      });
+      setWaitJoined(true);
+      setWaitName("");
+      setWaitPhone("");
+      toast.success("ثبت شد — وقتی موجود شد خبرت می‌کنیم");
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        const first = Object.values(err.messages)[0];
+        const message = Array.isArray(first) ? first[0] : first;
+        toast.error(String(message ?? "ثبت نشد"));
+        return;
+      }
+      toast.error("ثبت نشد");
+    } finally {
+      setWaitSaving(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <ShopShell cartCount={cartCount(lines)} wishCount={wishlistCount(wish)}>
@@ -149,6 +179,7 @@ export default function ShopProductPage({
   const price = variantUnitPrice(product, selected);
   const wished = isInWishlist(product.id, wish);
   const canAdd = variantsOn ? Boolean(selected && selected.stock > 0) : stock > 0;
+  const showWaitlist = productStock(product) === 0;
 
   return (
     <ShopShell cartCount={cartCount(lines)} wishCount={wishlistCount(wish)}>
@@ -288,6 +319,51 @@ export default function ShopProductPage({
               {wished ? "♥ در علاقه‌مندی‌ها" : "♡ علاقه‌مندی"}
             </button>
           </div>
+
+          {showWaitlist && (
+            <div className="mt-6 rounded-3xl border border-[#14110e]/10 bg-[#f4efe6]/80 p-4">
+              {waitJoined ? (
+                <p className="text-sm text-[#1f4a45]">
+                  ثبت شد. وقتی دوباره موجود شد از همین شماره خبرت می‌کنیم.
+                </p>
+              ) : (
+                <form onSubmit={submitWaitlist} className="space-y-3">
+                  <div>
+                    <p className="font-display text-base font-semibold">
+                      خبرم کن وقتی موجود شد
+                    </p>
+                    <p className="mt-1 text-xs text-[#6b6459]">
+                      نام و شماره را بگذار تا فروشنده خبرت کند.
+                    </p>
+                  </div>
+                  <input
+                    value={waitName}
+                    onChange={(event) => setWaitName(event.target.value)}
+                    placeholder="نام"
+                    required
+                    minLength={2}
+                    className="w-full rounded-2xl border border-[#14110e]/10 bg-white px-3 py-2.5 text-sm"
+                  />
+                  <input
+                    value={waitPhone}
+                    onChange={(event) => setWaitPhone(event.target.value)}
+                    placeholder="۰۹۱۲…"
+                    inputMode="tel"
+                    dir="ltr"
+                    required
+                    className="w-full rounded-2xl border border-[#14110e]/10 bg-white px-3 py-2.5 text-sm"
+                  />
+                  <button
+                    type="submit"
+                    disabled={waitSaving}
+                    className="rounded-full bg-[#1f4a45] px-4 py-2.5 text-sm text-white disabled:opacity-40"
+                  >
+                    {waitSaving ? "…" : "ثبت درخواست"}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

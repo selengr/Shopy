@@ -15,6 +15,7 @@ const links = [
   { href: "/panel/coupons", label: "تخفیف", exact: false },
   { href: "/panel/shipping", label: "ارسال", exact: false },
   { href: "/panel/returns", label: "مرجوعی", exact: false },
+  { href: "/panel/waitlist", label: "انتظار", exact: false },
   { href: "/panel/orders", label: "سفارش‌ها", exact: false },
   { href: "/panel/products", label: "محصولات", exact: false },
   { href: "/panel/notifications", label: "اعلان‌ها", exact: false },
