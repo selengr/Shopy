@@ -19,7 +19,6 @@ export default function PanelCustomers() {
     ([, phone]) => GetCustomer(phone),
   );
 
-  const customers = data ?? [];
   const filtered = useMemo(() => {
     const list = data ?? [];
     const q = query.trim();
