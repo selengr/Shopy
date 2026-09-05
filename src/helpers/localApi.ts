@@ -15,7 +15,11 @@ import { isProductActive } from "@/helpers/catalog";
 import { nextStatuses, canCustomerCancel } from "@/helpers/orders";
 import { canRequestReturn } from "@/helpers/returns";
 import { makeAuthority, makeRefId } from "@/helpers/payments";
-import { averageRating, clampRating } from "@/helpers/reviews";
+import { averageRating, clampRating, visibleReviews } from "@/helpers/reviews";
+import {
+  buildCustomerDirectory,
+  customerDetail,
+} from "@/helpers/customers";
 import { deliverOtpSms, shouldShowOtpHint } from "@/helpers/sms";
 import { permissionsForRole, roleFromPermissions } from "@/helpers/roles";
 import type { ShopRole } from "@/helpers/roles";
@@ -542,7 +546,9 @@ export async function handleLocalRequest(
     const products = getProducts()
       .filter((product) => isProductActive(product))
       .map((product) => {
-        const list = reviews.filter((item) => item.productId === product.id);
+        const list = visibleReviews(
+          reviews.filter((item) => item.productId === product.id),
+        );
         return {
           ...product,
           ratingAvg: averageRating(list),
@@ -559,7 +565,9 @@ export async function handleLocalRequest(
     if (!product || !isProductActive(product)) {
       throw fail(config, 404, { message: "not found" });
     }
-    const list = getReviews().filter((item) => item.productId === id);
+    const list = visibleReviews(
+      getReviews().filter((item) => item.productId === id),
+    );
     return ok(config, {
       product: {
         ...product,
@@ -576,9 +584,9 @@ export async function handleLocalRequest(
     if (!product || !isProductActive(product)) {
       throw fail(config, 404, { message: "not found" });
     }
-    const reviews = getReviews()
-      .filter((item) => item.productId === id)
-      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const reviews = visibleReviews(
+      getReviews().filter((item) => item.productId === id),
+    ).sort((a, b) => b.created_at.localeCompare(a.created_at));
     return ok(config, {
       reviews,
       ratingAvg: averageRating(reviews),
@@ -1826,6 +1834,63 @@ export async function handleLocalRequest(
     list[index] = { ...list[index], done: true };
     saveWaitlist(list);
     return ok(config, { entry: list[index] });
+  }
+
+  if (method === "GET" && path === "/customers") {
+    const session = getSession();
+    if (!session) throw fail(config, 401, { message: "unauthenticated" });
+    return ok(config, {
+      customers: buildCustomerDirectory(getCustomers(), getOrders()),
+    });
+  }
+
+  const customerMatch = path.match(/^\/customers\/(\d{10,13})$/);
+  if (method === "GET" && customerMatch) {
+    const session = getSession();
+    if (!session) throw fail(config, 401, { message: "unauthenticated" });
+    const phone = normalizeIranianPhone(customerMatch[1]);
+    const detail = customerDetail(
+      phone,
+      getCustomers(),
+      getOrders(),
+      getAddresses(),
+    );
+    if (!detail) throw fail(config, 404, { message: "not found" });
+    return ok(config, detail);
+  }
+
+  if (method === "GET" && path === "/reviews") {
+    const session = getSession();
+    if (!session) throw fail(config, 401, { message: "unauthenticated" });
+    const products = getProducts();
+    const reviews = [...getReviews()]
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .map((review) => ({
+        ...review,
+        productTitle:
+          products.find((item) => item.id === review.productId)?.title ??
+          `محصول #${review.productId}`,
+      }));
+    return ok(config, { reviews });
+  }
+
+  const reviewVisibilityMatch = path.match(
+    /^\/reviews\/(\d+)\/(hide|unhide)$/,
+  );
+  if (method === "POST" && reviewVisibilityMatch) {
+    const session = getSession();
+    if (!session) throw fail(config, 401, { message: "unauthenticated" });
+    const id = Number(reviewVisibilityMatch[1]);
+    const action = reviewVisibilityMatch[2];
+    const reviews = getReviews();
+    const index = reviews.findIndex((item) => item.id === id);
+    if (index < 0) throw fail(config, 404, { message: "not found" });
+    reviews[index] = {
+      ...reviews[index],
+      hidden: action === "hide",
+    };
+    saveReviews(reviews);
+    return ok(config, { review: reviews[index] });
   }
 
   const returnResolveMatch = path.match(/^\/returns\/(\d+)\/(approve|reject)$/);

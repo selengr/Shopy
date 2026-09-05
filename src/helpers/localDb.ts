@@ -17,7 +17,7 @@ import { STOCK_ALERT_THRESHOLD } from "@/helpers/stockAlerts";
 import type { OrderNotification } from "@/helpers/notifications";
 
 const DATA_VERSION_KEY = "shopy_data_v";
-const DATA_VERSION = "22";
+const DATA_VERSION = "23";
 const USERS_KEY = "shopy_users";
 const PRODUCTS_KEY = "shopy_products";
 const ORDERS_KEY = "shopy_orders";
@@ -542,6 +542,12 @@ function seedCustomers(): Customer[] {
       phone: "09129876543",
       created_at: daysAgo(20, 10),
     },
+    {
+      id: 2,
+      name: "نگار احمدی",
+      phone: "09123334444",
+      created_at: daysAgo(12, 15),
+    },
   ];
 }
 
@@ -640,6 +646,15 @@ function seedReviews(): Review[] {
       rating: 5,
       body: "چرمش عالی است.",
       created_at: now,
+    },
+    {
+      id: 4,
+      productId: 1,
+      authorName: "اسپم",
+      rating: 1,
+      body: "خرید از سایت دیگه!!! لینک جعلی",
+      created_at: daysAgo(0, 8),
+      hidden: true,
     },
   ];
 }

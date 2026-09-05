@@ -5,4 +5,6 @@ export default interface Review {
   rating: number;
   body: string;
   created_at: string;
+  /** seller hid from the public shop */
+  hidden?: boolean;
 }
