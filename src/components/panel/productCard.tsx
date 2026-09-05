@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { categoryLabel } from "@/helpers/catalog";
+import { categoryLabel, isProductActive } from "@/helpers/catalog";
 import ProductPrice from "@/components/shared/productPrice";
 import useAuth from "@/hooks/useAuth";
 import User from "@/models/user";
@@ -12,12 +12,18 @@ export default function ProductCard({ product }: { product: Product }) {
   const { user } = useAuth();
   const canEdit = new User(user).canAccess("manage_products");
   const stock = product.stock ?? 0;
+  const active = isProductActive(product);
 
   return (
     <article className="relative flex flex-col rounded-3xl border border-[#14110e]/8 bg-white/85 p-4 shadow-sm">
-      {product.featured && (
+      {product.featured && active && (
         <span className="absolute top-3 left-3 z-10 rounded-full bg-[#1f4a45] px-2.5 py-0.5 text-[10px] text-white">
           ویژه
+        </span>
+      )}
+      {!active && (
+        <span className="absolute top-3 left-3 z-10 rounded-full bg-gray-700 px-2.5 py-0.5 text-[10px] text-white">
+          آرشیو
         </span>
       )}
       <ProductThumb item={product} className="h-36" />
