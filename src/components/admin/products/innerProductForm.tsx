@@ -7,7 +7,7 @@ import Input from "@/components/shared/form/input";
 import SelectBox from "@/components/shared/form/selectbox";
 import Textarea from "@/components/shared/form/textarea";
 import { PRODUCT_EMOJIS, categorySelectOptions } from "@/helpers/catalog";
-import ProductImageField from "@/components/admin/products/productImageField";
+import ProductImagesField from "@/components/admin/products/productImagesField";
 import ProductVariantsField from "@/components/admin/products/productVariantsField";
 import Product from "@/models/product";
 
@@ -66,9 +66,12 @@ export default function InnerProductForm(props: ProductFormProps) {
           />
         </div>
         <div className="sm:col-span-4">
-          <ProductImageField
-            value={props.values.image}
-            onChange={(value) => props.setFieldValue("image", value)}
+          <ProductImagesField
+            value={props.values.images ?? []}
+            onChange={(next) => {
+              props.setFieldValue("images", next);
+              props.setFieldValue("image", next[0] ?? "");
+            }}
           />
         </div>
         <label className="sm:col-span-4 flex cursor-pointer items-center gap-2 text-sm">

@@ -19,7 +19,10 @@ export default interface Product {
   created_at: string;
   stock?: number;
   emoji?: string;
+  /** cover image (same as images[0] when gallery exists) */
   image?: string;
+  /** optional gallery; first entry is the cover */
+  images?: string[];
   title_en?: string;
   body_en?: string;
   ratingAvg?: number;

@@ -9,6 +9,7 @@ import {
   variantLabel,
   variantUnitPrice,
 } from "@/helpers/variants";
+import { normalizeImagesInput } from "@/helpers/productImages";
 import { nextStatuses } from "@/helpers/orders";
 import { canRequestReturn } from "@/helpers/returns";
 import { makeAuthority, makeRefId } from "@/helpers/payments";
@@ -378,6 +379,7 @@ export async function handleLocalRequest(
       config,
       true,
     );
+    const media = normalizeImagesInput(body.images, body.image);
     const product = {
       id: nextId(products),
       title: String(body.title ?? ""),
@@ -391,7 +393,8 @@ export async function handleLocalRequest(
       created_at: new Date().toISOString(),
       stock,
       emoji: String(body.emoji ?? "📦"),
-      image: String(body.image ?? "").trim() || undefined,
+      image: media.image,
+      images: media.images,
       variants,
       featured: Boolean(body.featured),
     };
@@ -419,6 +422,20 @@ export async function handleLocalRequest(
       body.compareAtPrice !== undefined
         ? resolveCompareAtPrice(body.compareAtPrice, price, config, true)
         : products[index].compareAtPrice;
+    const media =
+      body.images !== undefined || body.image !== undefined
+        ? normalizeImagesInput(
+            body.images !== undefined
+              ? body.images
+              : body.image
+                ? [body.image]
+                : [],
+            body.image,
+          )
+        : {
+            image: products[index].image,
+            images: products[index].images,
+          };
     products[index] = {
       ...products[index],
       title: String(body.title ?? products[index].title),
@@ -436,7 +453,8 @@ export async function handleLocalRequest(
       compareAtPrice,
       stock,
       emoji: String(body.emoji ?? products[index].emoji ?? "📦"),
-      image: String(body.image ?? products[index].image ?? "").trim() || undefined,
+      image: media.image,
+      images: media.images,
       variants,
       featured:
         body.featured !== undefined

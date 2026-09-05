@@ -30,6 +30,7 @@ const FormikCreateProductForm = withFormik<
     stock: 1,
     emoji: "📦",
     image: "",
+    images: [],
     variants: [],
     featured: false,
   }),
@@ -51,6 +52,7 @@ const FormikCreateProductForm = withFormik<
     stock: yup.number().min(0).required("موجودی الزامی است"),
     emoji: yup.string().required(),
     image: yup.string(),
+    images: yup.array().of(yup.string()),
   }),
   handleSubmit: async (values, { props, setFieldError }) => {
     try {

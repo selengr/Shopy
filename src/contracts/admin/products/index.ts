@@ -19,6 +19,7 @@ export interface CreateProductInterface {
   stock: number;
   emoji: string;
   image: string;
+  images: string[];
   variants: ProductVariantInput[];
   featured: boolean;
 }

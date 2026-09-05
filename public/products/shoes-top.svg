@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-label="shoes top">
+  <rect width="800" height="800" fill="#f0ebe3"/>
+  <ellipse cx="400" cy="410" rx="170" ry="250" fill="#1f4a45"/>
+  <ellipse cx="400" cy="360" rx="90" ry="130" fill="#f4efe6" opacity="0.2"/>
+  <path d="M400 200v280" stroke="#f4efe6" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
+  <circle cx="400" cy="190" r="22" fill="#c9a227"/>
+</svg>

@@ -29,7 +29,9 @@ import {
   subscribeLocale,
 } from "@/helpers/locale";
 import { categoryLabel } from "@/helpers/catalog";
+import ProductGallery from "@/components/shop/productGallery";
 import ProductPrice from "@/components/shared/productPrice";
+import { productImages } from "@/helpers/productImages";
 import { formatStars } from "@/helpers/reviews";
 import { formatDay } from "@/helpers/orders";
 import {
@@ -155,7 +157,11 @@ export default function ShopProductPage({
       </Link>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_1.1fr]">
-        <ProductThumb item={product} className="h-72 sm:h-80" />
+        <ProductGallery
+          images={productImages(product)}
+          title={localizedTitle(product, locale)}
+          emoji={product.emoji}
+        />
         <div>
           <p className="text-xs text-[#1f4a45]">{categoryLabel(product.category)}</p>
           <h1 className="font-display mt-2 text-3xl font-semibold">

@@ -19,7 +19,9 @@ export default function ProductThumb({
       <img
         src={item.image}
         alt={item.title}
-        className={`w-full object-cover ${compact ? "rounded-lg" : "rounded-2xl"} ${className}`}
+        className={`object-cover ${compact ? "rounded-lg" : "rounded-2xl"} ${
+          className.includes("w-") ? "" : "w-full"
+        } ${className}`}
       />
     );
   }

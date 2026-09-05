@@ -34,7 +34,13 @@ const FormikEditProductForm = withFormik<ProductFormProps, CreateProductInterfac
       body_en: product.body_en ?? "",
       stock: product.stock ?? 0,
       emoji: product.emoji ?? "📦",
-      image: product.image ?? "",
+      image: product.image ?? product.images?.[0] ?? "",
+      images:
+        product.images?.length
+          ? product.images
+          : product.image
+            ? [product.image]
+            : [],
       variants: variantsFromProduct(product.variants),
       featured: Boolean(product.featured),
     }),
@@ -56,6 +62,7 @@ const FormikEditProductForm = withFormik<ProductFormProps, CreateProductInterfac
       stock: yup.number().min(0).required("موجودی الزامی است"),
       emoji: yup.string().required(),
       image: yup.string(),
+      images: yup.array().of(yup.string()),
     }),
     handleSubmit: async (values, { props, setFieldError }) => {
       try {

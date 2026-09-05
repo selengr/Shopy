@@ -16,7 +16,7 @@ import { STOCK_ALERT_THRESHOLD } from "@/helpers/stockAlerts";
 import type { OrderNotification } from "@/helpers/notifications";
 
 const DATA_VERSION_KEY = "shopy_data_v";
-const DATA_VERSION = "18";
+const DATA_VERSION = "19";
 const USERS_KEY = "shopy_users";
 const PRODUCTS_KEY = "shopy_products";
 const ORDERS_KEY = "shopy_orders";
@@ -112,6 +112,11 @@ function seedProducts(): Product[] {
       stock: 11,
       emoji: "👟",
       image: "/products/shoes.jpg",
+      images: [
+        "/products/shoes.jpg",
+        "/products/shoes-side.svg",
+        "/products/shoes-top.svg",
+      ],
       featured: true,
       variants: [
         { id: 1, size: "40", color: "سفید", stock: 3 },
