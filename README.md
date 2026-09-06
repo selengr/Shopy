@@ -1,58 +1,71 @@
 # Shopy
 
-Small-shop admin panel. You log in with an Iranian phone number, manage products and orders, and there's a public storefront at `/shop` if you want customers to buy without calling you.
+**Persian RTL commerce stack for small shops** — seller panel + public storefront in one Next.js app.
 
-I started this around 2022 on Next.js 12, left it alone for a long time, then dragged it onto Next 16 / React 19 / Tailwind 4. Same idea, less ancient tooling.
+Phone OTP auth, catalog and inventory, orders through delivery, guest checkout, and optional live SMS / Zarinpal. Default demo mode runs entirely in the browser (`localStorage` mock API) so you can explore without a backend.
 
-## What it does
+[Live idea](https://github.com/selengr/Shopy) · Stack: **Next.js 16 · React 19 · TypeScript · Tailwind 4 · Redux Toolkit · SWR**
 
-- phone login (local OTP hint, or Kavenegar if you wire SMS)
-- seller panel for catalog, stock, orders, invoices
-- roles so an admin can manage products and people
-- public shop: browse, search, cart, guest checkout, order receipt
-- payments: cash on delivery, a fake in-app gateway, or Zarinpal sandbox / live
-- customers can track an order with the order id + phone (`/shop/track`)
-- reviews on product pages, plus related products by category
-- stock alerts when something drops to 5 or below
-- wishlist on the shop (stays on that browser)
-- simple analytics (`/panel/analytics`) and order notifications (`/panel/notifications`)
-- FA/EN toggle on the shop catalog
-- discount codes (`/panel/coupons` — try `WELCOME10`)
-- customer accounts at `/shop/account` (separate from seller login)
-- shipping methods (`/panel/shipping`) plus an address book on checkout / account
-- size / color variants on products (pick them on the product page; edit in admin)
-- returns / refunds (`/panel/returns`, request from `/shop/account` on shipped/delivered orders)
-- packing slips with seller packing notes (`/panel/orders/[id]/packing`)
-- shop settings (`/panel/settings`) — name, contact, invoice footer
-- featured products — mark them in admin; they show up as «پیشنهادها» on `/shop`
-- sale / compare-at prices on products (strikethrough «قبل» price in the shop)
-- about / contact pages from shop settings
-- order lifecycle through delivered; SEO basics (`robots`, `sitemap`, 404)
-- shipment tracking codes when the seller marks an order as shipped
-- product photo galleries (up to 6 images; first is the cover)
-- customers can cancel pending / paid orders from `/shop/account`
-- shop catalog sort (newest / price / rating) plus in-stock and on-sale filters
-- soft-archive products (hide from `/shop` without deleting)
-- back-in-stock waitlist (`/panel/waitlist`) — customers leave a name + phone on sold-out product pages
-- seller customers directory (`/panel/customers`) — registered buyers + guest phones from orders
-- review moderation (`/panel/reviews`) — hide spam from the public shop and ratings
+---
 
-Default mode needs no backend: `NEXT_PUBLIC_LOCAL_AUTH=true`. Sign in as `09121111111`, grab the code from the toast / next screen (it stays up a bit longer so you can copy it), and you're in. Shop is `/shop`.
+## Highlights
 
-### Quick demo walk
+| Area | What you get |
+| --- | --- |
+| **Auth** | Iranian mobile OTP (local hint or [Kavenegar](https://kavenegar.com)); seller roles (admin / staff) |
+| **Seller panel** | Products, variants, galleries, archive, coupons, shipping, returns, waitlist, customers, review moderation, analytics, notifications, packing slips, invoices |
+| **Storefront** | Browse / search / sort / filters, FA↔EN catalog, cart, wishlist, COD + online pay, order tracking, accounts, about & contact |
+| **Ops** | Stock alerts, shipment tracking codes, sale prices, featured products, SEO (`robots`, `sitemap`, OG) |
 
-1. Open `/shop` — featured section, then browse. Open the white sneakers for a 3-photo gallery. تیشرت and کیف have sale prices. «شال پاییزه» is sold out (try the waitlist form); ساعت مچی is archived so it won’t appear in the shop.
-2. Add something to the cart (variant products open the product page). Try coupon `WELCOME10` or `SAVE50K`. Optional checkout note goes to the seller.
-3. Checkout COD → you land on an order receipt. Track with the same phone, or try sample **1048** / `09123334444`.
-4. Seller: `/auth/login` as `09121111111`, then `/panel` for orders / analytics / notifications. Move a packed order to shipped (add a tracking code) → delivered. Check `/panel/waitlist` for restock requests. Browse `/panel/customers` (try `09129876543`) and `/panel/reviews` (one seeded spam review is already hidden).
-5. Customer account: `/shop/account` with e.g. `09129876543` (seeded buyer). Try cancelling pending order **1049**. Track **1045** / `09120001111` for a Tipax code. Returns: order **1045** is shipped and has a pending return in `/panel/returns`.
-6. Staff without admin powers: `09122222222`.
+Built as a portfolio-grade end-to-end demo of shop workflows — not a production SaaS backend.
 
-Hard refresh once after pulling if seeded data looks old (local data version bumps wipe the mock DB).
+---
 
-### Optional: Kavenegar
+## Quick start
 
+```bash
+cp .env.example .env.local
+npm install
+npm run dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+| Role | Phone | Notes |
+| --- | --- | --- |
+| Admin seller | `09121111111` | OTP shown on screen in local mode |
+| Staff | `09122222222` | No admin permissions |
+| Seeded buyer | `09129876543` | `/shop/account` |
+
+Public shop: `/shop` · Seller panel: `/panel` (after login)
+
+> After pulling, hard-refresh once if mock data looks stale — bumping the local data version reseeds the demo DB.
+
+---
+
+## Demo walkthrough
+
+1. **Shop** — `/shop`: featured products, sneakers gallery, sale prices on تیشرت / کیف, sold-out «شال پاییزه» (waitlist), archived ساعت مچی hidden from catalog.
+2. **Checkout** — add to cart (variants open PDP). Coupons `WELCOME10` / `SAVE50K`. Optional note for the seller. COD → receipt; track with the same phone or sample **1048** / `09123334444`.
+3. **Seller** — login `09121111111` → `/panel`: ship with tracking code, `/panel/waitlist`, `/panel/customers`, `/panel/reviews`.
+4. **Buyer account** — `/shop/account` as `09129876543`: cancel pending **1049**; track **1045** / `09120001111` (Tipax); return on shipped **1045**.
+
+---
+
+## Configuration
+
+Copy `.env.example` → `.env.local`. Important flags:
+
+```bash
+NEXT_PUBLIC_LOCAL_AUTH=true          # browser mock API (demo)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_PAYMENT_DRIVER=local     # or zarinpal
+SMS_PROVIDER=local                   # or kavenegar
+```
+
+### Optional: Kavenegar SMS
+
+```bash
 SMS_PROVIDER=kavenegar
 KAVENEGAR_API_KEY=your-key
 KAVENEGAR_SENDER=10008663
@@ -61,50 +74,45 @@ NEXT_PUBLIC_SHOW_OTP_HINT=false
 
 ### Optional: Zarinpal
 
-```
+```bash
 NEXT_PUBLIC_PAYMENT_DRIVER=zarinpal
 ZARINPAL_MERCHANT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ZARINPAL_SANDBOX=true
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=https://your-public-host
 ```
 
-Sandbox merchant is fine for local tries. Callback hits `/shop/pay/callback`. If your phone can't reach localhost, tunnel it and point `NEXT_PUBLIC_APP_URL` at that URL.
+Callback path: `/shop/pay/callback`. Use a tunnel if the phone cannot reach localhost.
 
-When you eventually plug a real API in:
+### Real API later
 
-```
+```bash
 NEXT_PUBLIC_LOCAL_AUTH=false
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
-## Run
-
-```bash
-cp .env.example .env.local
-npm install
-npm run dev
-```
-
-Open http://localhost:3000
+---
 
 ## Deploy
 
-Set `NEXT_PUBLIC_APP_URL` to your real public URL (no trailing slash). Sitemap, Open Graph, and Zarinpal callbacks use it — leaving the localhost default breaks those on a live host.
-
-Also keep `NEXT_PUBLIC_LOCAL_AUTH=true` for the browser mock API demo. For a real backend, flip it off and point `NEXT_PUBLIC_API_URL` at your API.
-
-Checklist before you go live:
-
-1. Copy `.env.example` → host env; set `NEXT_PUBLIC_APP_URL`
-2. Hard-refresh once after deploy if you already tried an older demo (mock data version is **24**)
-3. Smoke the walk below on phone width — panel menu is a hamburger under `xl`
-4. Optional: turn on Kavenegar / Zarinpal only if you have keys
+1. Set `NEXT_PUBLIC_APP_URL` to the public origin (**no** trailing slash) — required for sitemap, Open Graph, and payment return URLs.
+2. Keep `NEXT_PUBLIC_LOCAL_AUTH=true` for the mock demo, or point `NEXT_PUBLIC_API_URL` at your API.
+3. Smoke-test on mobile; panel nav collapses under `xl`.
 
 ```bash
 npm run build
 npm start
 ```
 
-## Done for this demo
+---
 
-This localStorage mock is meant as a full small-shop walkthrough, not a production backend. Optional live SMS (Kavenegar) and payments (Zarinpal) are already wired above when you have keys. A real image CDN or separate API can come later if you take it past the portfolio demo.
+## Project notes
+
+- **UI** — RTL Persian, Estedad / IBM Plex Sans Arabic, cream + teal brand system.
+- **Architecture** — App Router under `src/`; local mock lives in `helpers/localDb.ts` + `helpers/localApi.ts` when `NEXT_PUBLIC_LOCAL_AUTH=true`.
+- **Scope** — Full commerce walkthrough for demos and interviews. Image CDN and a dedicated backend are intentional follow-ons, not blockers for evaluating the product surface.
+
+---
+
+## License
+
+Private / portfolio project unless otherwise stated.
