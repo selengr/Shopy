@@ -32,7 +32,7 @@ By default it needs no backend. Set `NEXT_PUBLIC_LOCAL_AUTH=true`, sign in as `0
 5. Buyer account: `/shop/account` with `09129876543`. You can cancel pending order **1049**. Track **1045** / `09120001111` for a Tipax code. Returns use order **1045**.
 6. Staff account (less access): `09122222222`.
 
-If seeded data looks old after a pull, hard-refresh once. That clears the local demo database when the version changes.
+If seeded data looks old after a pull, hard-refresh the browser once. That clears the local demo database when the version changes.
 
 ### Optional SMS (Kavenegar)
 
