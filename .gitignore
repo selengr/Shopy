@@ -38,3 +38,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local GitHub profile README workspace (published as selengr/selengr)
+.profile-readme/
