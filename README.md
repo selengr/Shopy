@@ -21,7 +21,7 @@ I started this around 2022 on Next.js 12. Later I moved it to Next 16, React 19,
 - about and contact pages
 - basic SEO (robots, sitemap, 404)
 
-By default it needs no backend. Set `NEXT_PUBLIC_LOCAL_AUTH=true`, sign in as `09121111111`, copy the code from the screen, and you’re in.
+By default it needs no backend server. Set `NEXT_PUBLIC_LOCAL_AUTH=true`, sign in as `09121111111`, copy the code from the screen, and you’re in.
 
 ### Try it quickly
 
